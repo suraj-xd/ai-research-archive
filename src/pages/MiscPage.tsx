@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { Sparkles } from "lucide-react";
+import { miscResources, miscCategoryLabels, miscCategoryColors } from "@/data/misc";
+import { getFaviconUrl, getPreviewUrl } from "@/utils/previews";
+
+type Filter = "all" | string;
+
+export default function MiscPage() {
+  const [filter, setFilter] = useState<Filter>("all");
+
+  const filtered =
+    filter === "all"
+      ? miscResources
+      : miscResources.filter((r) => r.category === filter);
+
+  const categories = Object.keys(miscCategoryLabels);
+
+  return (
+    <section className="scroll-mt-20 mb-10">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="h-px bg-border flex-1" />
+        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
+          <Sparkles size={10} />
+          Misc & Inspiration
+        </span>
+        <div className="h-px bg-border flex-1" />
+      </div>
+
+      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
+        <h2 className="text-sm font-semibold text-accent mb-1">
+          Misc & Inspiration
+        </h2>
+        <p className="text-xs text-text-muted leading-relaxed">
+          {miscResources.length} interesting reads beyond ML — computer science,
+          engineering, physics, philosophy, career advice, and more.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-2">
+        <button
+          onClick={() => setFilter("all")}
+          className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            filter === "all"
+              ? "border-border-hover bg-bg-hover text-accent"
+              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+          }`}
+        >
+          All
+          <span className="text-[10px] text-text-dim">{miscResources.length}</span>
+        </button>
+        {categories.map((cat) => {
+          const count = miscResources.filter((r) => r.category === cat).length;
+          if (count === 0) return null;
+          return (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+                filter === cat
+                  ? "border-border-hover bg-bg-hover text-accent"
+                  : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              }`}
+            >
+              {miscCategoryLabels[cat]}
+              <span className="text-[10px] text-text-dim">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {filtered.map((resource) => {
+          const preview = getPreviewUrl(resource.url);
+          return (
+            <a
+              key={resource.url}
+              href={resource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="grid-card group flex flex-col overflow-hidden relative"
+            >
+              {preview && (
+                <div className="aspect-[2/1] w-full overflow-hidden bg-bg">
+                  <img
+                    src={preview}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).parentElement!.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+              <div className="p-3 flex items-start gap-2">
+                <img
+                  src={getFaviconUrl(resource.url)}
+                  alt=""
+                  className="w-4 h-4 mt-0.5 shrink-0"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+                    {resource.title}
+                  </span>
+                </div>
+                <span
+                  className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 ${
+                    miscCategoryColors[resource.category]
+                  }`}
+                >
+                  {miscCategoryLabels[resource.category]?.slice(0, 5).toUpperCase() ?? "MISC"}
+                </span>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
