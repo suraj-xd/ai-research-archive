@@ -24,7 +24,7 @@ export function Header({
         {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
       </button>
 
-      <Link to="/" className="flex items-center gap-2 flex-1">
+      <Link to="/overview" className="flex items-center gap-2 flex-1">
         <Brain size={16} className="text-text-muted" />
         <span className="text-xs font-medium tracking-wide uppercase text-text-muted">
           Become AI Researcher

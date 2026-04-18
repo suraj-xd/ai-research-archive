@@ -35,9 +35,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="landing" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} />
         <Route element={<Layout />}>
-          <Route index element={<HomePage />} />
+          <Route path="overview" element={<HomePage />} />
           <Route path="resources" element={<ResourcesPage />} />
           <Route path="community" element={<CommunityPage />} />
           <Route path="study-with-me" element={<StudyWithMePage />} />

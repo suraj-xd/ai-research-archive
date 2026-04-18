@@ -104,6 +104,7 @@ export const practiceSites: PracticeSite[] = [
   { name: "Seeing Theory", description: "Visual introduction to probability and statistics. Interactive, beautiful.", url: "https://seeing-theory.brown.edu", category: "interactive" },
   { name: "3Blue1Brown Interactive", description: "Interactive versions of 3Blue1Brown lessons. Explore math concepts hands-on.", url: "https://www.3blue1brown.com", category: "interactive" },
   { name: "TensorTonic", description: "LeetCode for ML papers. Implement Transformers, BERT, ViT, GANs from scratch in cloud IDEs. 200+ problems.", url: "https://www.tensortonic.com/", category: "interactive" },
+  { name: "ML Knowledge Graph", description: "Interactive graph of machine learning concepts and their relationships. Click any node to explore prerequisites, derivations, and related ideas visually.", url: "https://the-palindrome.github.io/ml-knowledge-graph/", category: "interactive" },
   { name: "Neural Network Visualization", description: "Interactive 3D visualization of an MLP training on MNIST. Built with Three.js and PyTorch. See what networks actually learn.", url: "https://nn-vis.noelith.dev/", category: "interactive" },
   { name: "Google AI Edge Gallery", description: "On-device ML showcase for Android and iOS. Run Gemma, multimodal analysis, and transcription directly on mobile devices.", url: "https://github.com/google-ai-edge/gallery", category: "interactive" },
 

@@ -1,4 +1,7 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { Star } from "lucide-react";
+import { useGitHubStars } from "@/hooks/useGitHubStars";
 import { books, playlists, channels, platforms } from "@/data/resources";
 import { modules } from "@/data/curriculum";
 import { xProfiles } from "@/data/community";
@@ -643,9 +646,28 @@ const CONFIG = {
   BUFFER: 500,
 };
 
+const DOMAIN_PILLS = [
+  { to: "/machine-learning", label: "Machine Learning" },
+  { to: "/deep-learning", label: "Deep Learning" },
+  { to: "/reinforcement-learning", label: "Reinforcement Learning" },
+  { to: "/gpu", label: "GPU & CUDA" },
+];
+
+const RESOURCE_PILLS = [
+  { to: "/resources", label: "Books" },
+  { to: "/overview", label: "Curriculum" },
+  { to: "/blogs", label: "Blogs" },
+  { to: "/papers", label: "Papers" },
+  { to: "/articles", label: "Notes" },
+  { to: "/jobs", label: "Jobs" },
+  { to: "/tools", label: "Tools" },
+  { to: "/glossary", label: "Glossary" },
+];
+
 export default function LandingPage() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const stars = useGitHubStars();
 
   useEffect(() => {
     const viewport = viewportRef.current!;
@@ -862,6 +884,50 @@ export default function LandingPage() {
   return (
     <div ref={viewportRef} className="landing-viewport">
       <div ref={gridRef} className="landing-grid-canvas" />
+
+      <div className="lp-overlay">
+        <div className="lp-overlay-fade lp-overlay-fade-bottom" aria-hidden="true" />
+
+        <div className="lp-overlay-bottom">
+          <div className="lp-overlay-hero">
+            <h1 className="lp-overlay-title font-mono">Become an AI Researcher</h1>
+          </div>
+
+          <div className="lp-overlay-pills lp-overlay-pills-domain">
+            {DOMAIN_PILLS.map((p) => (
+              <Link key={p.to} to={p.to} className="lp-pill lp-pill-domain">
+                {p.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="lp-overlay-pills lp-overlay-pills-resource">
+            {RESOURCE_PILLS.map((p) => (
+              <Link key={p.to} to={p.to} className="lp-pill lp-pill-resource">
+                {p.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="lp-overlay-bottom-actions">
+            <Link to="/overview" className="lp-cta">
+              Get Started
+              <span aria-hidden="true" className="lp-cta-arrow">→</span>
+            </Link>
+            <a
+              href="https://github.com/suraj-xd/ai-research-archive"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lp-star-badge"
+            >
+              <Star size={12} strokeWidth={2} />
+              <span>
+                {stars !== null ? `${stars.toLocaleString()} on GitHub` : "Star on GitHub"}
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
