@@ -653,6 +653,107 @@ const DOMAIN_PILLS = [
   { to: "/gpu", label: "GPU & CUDA" },
 ];
 
+/* ─── Sources badge ──────────────────────────────────────────────
+   Where the archive's content comes from. Stacked-avatar pattern,
+   brand-colored circles with Phosphor logos. Sits above the resource
+   pills on the landing canvas. */
+
+type SourceTile = {
+  name: string;
+  bg: string;
+  /** Either a Phosphor icon name + weight, OR a custom render override. */
+  icon?: string;
+  weight?: "regular" | "fill" | "bold";
+  /** When set, replaces the default Phosphor icon with this JSX (used for
+   *  brands without a Phosphor logo, e.g. Notion). Should render in white. */
+  custom?: React.ReactNode;
+};
+
+const NotionGlyph = (
+  <svg width="11" height="11" viewBox="0 0 256 268" preserveAspectRatio="xMidYMid">
+    <path
+      fill="#FFF"
+      d="M212.377 89.53c1.034 4.681 0 9.362-4.681 9.897l-7.783 1.542v114.404c-6.758 3.637-12.981 5.715-18.18 5.715-8.308 0-10.386-2.604-16.609-10.396l-50.898-80.079v77.476l16.1 3.646s0 9.362-12.989 9.362l-35.814 2.077c-1.043-2.086 0-7.284 3.63-8.318l9.351-2.595V109.823l-12.98-1.052c-1.044-4.68 1.55-11.439 8.826-11.965l38.426-2.585 52.958 81.113v-71.76l-13.498-1.552c-1.043-5.733 3.111-9.896 8.3-10.404l35.84-2.087Z"
+    />
+  </svg>
+);
+
+/** Brand colors are intentionally *not* token-driven — these are
+ *  third-party identity colors (YouTube red, GitHub black, X black,
+ *  Reddit orange, Discord blurple, Notion black). The "Web" fallback
+ *  uses --ga-fg2. */
+const SOURCES: SourceTile[] = [
+  { name: "YouTube", bg: "#FF0000",       icon: "youtube-logo", weight: "fill" },
+  { name: "GitHub",  bg: "#181717",       icon: "github-logo",  weight: "fill" },
+  { name: "X",       bg: "#000000",       icon: "x-logo",       weight: "regular" },
+  { name: "Reddit",  bg: "#FF4500",       icon: "reddit-logo",  weight: "fill" },
+  { name: "Discord", bg: "#5865F2",       icon: "discord-logo", weight: "fill" },
+  { name: "Notion",  bg: "#000000",       custom: NotionGlyph },
+  { name: "Web",     bg: "var(--ga-fg2)", icon: "globe",        weight: "regular" },
+];
+
+function SourcesBadge() {
+  return (
+    <div
+      className="inline-flex items-center"
+      style={{
+        gap: 10,
+        padding: "5px 14px 5px 8px",
+        borderRadius: "var(--ga-r-full, 999px)",
+        background: "rgba(255, 255, 255, 0.55)",
+        backdropFilter: "blur(14px) saturate(180%)",
+        WebkitBackdropFilter: "blur(14px) saturate(180%)",
+        border: "1px solid rgba(0, 0, 0, 0.07)",
+        boxShadow: "var(--ga-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
+        marginTop: 6,
+        pointerEvents: "auto",
+      }}
+    >
+      <div className="flex items-center" style={{ marginLeft: 4 }}>
+        {SOURCES.map((s, i) => (
+          <span
+            key={s.name}
+            title={s.name}
+            className="inline-flex items-center justify-center"
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              background: s.bg,
+              color: "#FFF",
+              border: "1.5px solid var(--ga-bg, #FBFBFB)",
+              marginLeft: i === 0 ? 0 : -8,
+              zIndex: SOURCES.length - i,
+              boxShadow: "var(--ga-shadow-sm, 0 1px 2px rgba(0,0,0,0.12))",
+              overflow: "hidden",
+            }}
+          >
+            {s.custom ?? (
+              <i
+                className={`${s.weight === "fill" ? "ph-fill" : s.weight === "bold" ? "ph-bold" : "ph"} ph-${s.icon}`}
+                style={{ fontSize: 12, color: "#FFF", lineHeight: 1 }}
+                aria-hidden
+              />
+            )}
+          </span>
+        ))}
+      </div>
+      <span
+        style={{
+          fontFamily: "var(--ga-font-mono)",
+          fontSize: 10,
+          fontWeight: 500,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "var(--ga-fg2)",
+        }}
+      >
+        Resources
+      </span>
+    </div>
+  );
+}
+
 const RESOURCE_PILLS = [
   { to: "/resources", label: "Books" },
   { to: "/overview", label: "Curriculum" },
@@ -890,7 +991,21 @@ export default function LandingPage() {
 
         <div className="lp-overlay-bottom">
           <div className="lp-overlay-hero">
-            <h1 className="lp-overlay-title font-mono">Become an AI Researcher</h1>
+            <img
+              src="/logo.png"
+              alt=""
+              width={96}
+              height={96}
+              style={{
+                width: 96,
+                height: 96,
+                objectFit: "contain",
+                display: "block",
+                marginBottom: 8,
+                filter: "drop-shadow(0 6px 16px rgba(178, 32, 109, 0.18))",
+              }}
+            />
+            <h1 className="lp-overlay-title">Become an AI Researcher</h1>
           </div>
 
           <div className="lp-overlay-pills lp-overlay-pills-domain">
@@ -900,6 +1015,8 @@ export default function LandingPage() {
               </Link>
             ))}
           </div>
+
+          <SourcesBadge />
 
           <div className="lp-overlay-pills lp-overlay-pills-resource">
             {RESOURCE_PILLS.map((p) => (
@@ -919,11 +1036,25 @@ export default function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="lp-star-badge"
+              aria-label={
+                stars !== null
+                  ? `Star this on GitHub — ${stars} stars`
+                  : "Star this on GitHub"
+              }
             >
               <Star size={12} strokeWidth={2} />
-              <span>
-                {stars !== null ? `${stars.toLocaleString()} on GitHub` : "Star on GitHub"}
-              </span>
+              <span>Star this</span>
+              {stars !== null && (
+                <span
+                  style={{
+                    color: "var(--ga-fg2)",
+                    marginLeft: 2,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  · {stars.toLocaleString()}
+                </span>
+              )}
             </a>
           </div>
         </div>

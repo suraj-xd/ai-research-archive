@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { HeroSection } from "@/components/Landing";
 import { ModuleSection } from "@/components/ModuleSection";
+import { ZigDivider } from "@/components/brand";
 import { modules } from "@/data/curriculum";
 
 export default function HomePage() {
@@ -39,12 +40,8 @@ export default function HomePage() {
       <HeroSection />
 
       {/* Curriculum Divider */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim">
-          Full Curriculum
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-6">
+        <ZigDivider label="Full Curriculum" width={420} />
       </div>
 
       {/* Module Sections */}

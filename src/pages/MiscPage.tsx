@@ -1,9 +1,13 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
-import { miscResources, miscCategoryLabels, miscCategoryColors } from "@/data/misc";
+import { PhIcon, ZigDivider } from "@/components/brand";
+import { miscResources, miscCategoryLabels } from "@/data/misc";
 import { getFaviconUrl, getPreviewUrl } from "@/utils/previews";
 
 type Filter = "all" | string;
+
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 export default function MiscPage() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -17,20 +21,15 @@ export default function MiscPage() {
 
   return (
     <section className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Sparkles size={10} />
-          Misc & Inspiration
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Misc & Inspiration" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
           Misc & Inspiration
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {miscResources.length} interesting reads beyond ML — computer science,
           engineering, physics, philosophy, career advice, and more.
         </p>
@@ -39,10 +38,10 @@ export default function MiscPage() {
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-2">
         <button
           onClick={() => setFilter("all")}
-          className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+          className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
             filter === "all"
-              ? "border-border-hover bg-bg-hover text-accent"
-              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
           All
@@ -55,10 +54,10 @@ export default function MiscPage() {
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+              className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
                 filter === cat
-                  ? "border-border-hover bg-bg-hover text-accent"
-                  : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               {miscCategoryLabels[cat]}
@@ -101,15 +100,11 @@ export default function MiscPage() {
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+                  <span className="text-xs font-medium text-foreground transition-colors">
                     {resource.title}
                   </span>
                 </div>
-                <span
-                  className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 ${
-                    miscCategoryColors[resource.category]
-                  }`}
-                >
+                <span className={`${NEUTRAL_CHIP} shrink-0`}>
                   {miscCategoryLabels[resource.category]?.slice(0, 5).toUpperCase() ?? "MISC"}
                 </span>
               </div>

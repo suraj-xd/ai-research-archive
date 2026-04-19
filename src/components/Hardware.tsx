@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Cpu, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
+import { ZigDivider } from "@/components/brand";
 
 interface HardwareTopic {
   id: string;
@@ -208,17 +209,12 @@ export function Hardware() {
 
   return (
     <section id="hardware" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Cpu size={10} />
-          Hardware
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Hardware" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
           Hardware for ML Training & Inference
         </h2>
         <p className="text-xs text-text-muted leading-relaxed">
@@ -232,14 +228,14 @@ export function Hardware() {
         href="https://github.com/AlexsJones/llmfit"
         target="_blank"
         rel="noopener noreferrer"
-        className="grid-card group p-4 flex items-start gap-3 mb-4 relative corner-tl corner-tr"
+        className="grid-card group p-4 flex items-start gap-3 mb-4 relative"
       >
         <div className="w-9 h-9 flex items-center justify-center text-[11px] font-semibold shrink-0 bg-green-400/20 text-green-400">
           LF
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+            <span className="text-xs font-medium text-text group-hover:text-foreground transition-colors">
               llmfit — Find what runs on your hardware
             </span>
             <ExternalLink size={9} className="text-text-dim shrink-0" />

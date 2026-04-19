@@ -2,35 +2,27 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
-import { ArrowUp } from "lucide-react";
+import { PhIcon } from "@/components/brand";
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-    document.documentElement.classList.toggle("light", !isDark);
-  }, [isDark]);
-
-  // Track scroll progress per page
-  useEffect(() => {
     const handleScroll = () => {
-      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const total =
+        document.documentElement.scrollHeight - window.innerHeight;
       setScrollProgress(total > 0 ? (window.scrollY / total) * 100 : 0);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Scroll to top on route change
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
 
-  // Handle hash-based scrolling (for curriculum links)
   useEffect(() => {
     if (location.hash) {
       setTimeout(() => {
@@ -40,38 +32,66 @@ export function Layout() {
     }
   }, [location.hash]);
 
-  const scrollToTop = () => {
+  const scrollToTop = () =>
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--ga-bg)",
+        color: "var(--ga-fg1)",
+      }}
+    >
       <Header
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onToggleSidebar={() => setSidebarOpen((v) => !v)}
         sidebarOpen={sidebarOpen}
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(!isDark)}
       />
 
-      <Sidebar
-        scrollProgress={scrollProgress}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <div className="flex">
+        <Sidebar
+          scrollProgress={scrollProgress}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
 
-      <main className="pt-20 lg:pl-60 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-          <Outlet />
-        </div>
-      </main>
+        <main
+          className="flex-1 min-w-0"
+          style={{ minHeight: "calc(100vh - 55px)" }}
+        >
+          <div
+            className="mx-auto"
+            style={{
+              maxWidth: 960,
+              padding: "32px 24px 80px",
+            }}
+          >
+            <Outlet />
+          </div>
+        </main>
+      </div>
 
       {scrollProgress > 10 && (
         <button
+          type="button"
           onClick={scrollToTop}
-          className="fixed bottom-4 right-4 p-2 bg-bg-card border border-border hover:border-border-hover transition-all z-30"
+          className="fixed inline-flex items-center justify-center transition-all"
+          style={{
+            bottom: 16,
+            right: 16,
+            width: 36,
+            height: 36,
+            borderRadius: 999,
+            background: "var(--ga-surface)",
+            border: "1px solid var(--ga-border)",
+            boxShadow: "var(--ga-shadow-md)",
+            color: "var(--ga-fg2)",
+            zIndex: 30,
+            cursor: "pointer",
+          }}
           aria-label="Back to top"
         >
-          <ArrowUp size={14} className="text-text-muted" />
+          <PhIcon name="arrow-up" size={14} color="var(--ga-fg2)" />
         </button>
       )}
     </div>

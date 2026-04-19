@@ -29,6 +29,7 @@ import BlogsPage from "@/pages/BlogsPage";
 import MiscPage from "@/pages/MiscPage";
 import NewbiesPage from "@/pages/NewbiesPage";
 import LandingPage from "@/pages/LandingPage";
+import DesignSystemPage from "@/pages/DesignSystemPage";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
@@ -36,6 +37,7 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/design" element={<DesignSystemPage />} />
         <Route element={<Layout />}>
           <Route path="overview" element={<HomePage />} />
           <Route path="resources" element={<ResourcesPage />} />

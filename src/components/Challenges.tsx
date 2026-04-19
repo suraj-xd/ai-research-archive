@@ -1,5 +1,6 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { Target, ChevronDown, ChevronRight } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import {
   challenges,
   challengeCategoryLabels,
@@ -10,14 +11,11 @@ import type { Challenge } from "@/data/challenges";
 type CategoryFilter = "all" | string;
 type DifficultyFilter = "all" | number;
 
-function getCategoryColor(cat: string): string {
-  const map: Record<string, string> = {
-    beginner: "text-green-400 border-green-400/30",
-    intermediate: "text-blue-400 border-blue-400/30",
-    advanced: "text-orange-400 border-orange-400/30",
-    research: "text-red-400 border-red-400/30",
-  };
-  return map[cat] || "text-text-dim border-border";
+function categoryShortLabel(cat: string): string {
+  if (cat === "beginner") return "BGN";
+  if (cat === "intermediate") return "INT";
+  if (cat === "advanced") return "ADV";
+  return "RES";
 }
 
 function DifficultyDots({ level }: { level: number }) {
@@ -26,9 +24,11 @@ function DifficultyDots({ level }: { level: number }) {
       {Array.from({ length: 5 }, (_, i) => (
         <span
           key={i}
-          className={`inline-block w-[5px] h-[5px] rounded-full ${
-            i < level ? "bg-accent" : "bg-border"
-          }`}
+          className="inline-block w-[5px] h-[5px] rounded-full"
+          style={{
+            background:
+              i < level ? "var(--ga-fg1)" : "var(--ga-divider)",
+          }}
         />
       ))}
     </span>
@@ -39,24 +39,16 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
   const [hintsOpen, setHintsOpen] = useState(false);
 
   return (
-    <div className="grid-card group p-4 flex flex-col gap-2 relative">
+    <div className="grid-card group p-4 flex flex-col gap-2">
       {/* Header row */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+          <span className="text-xs font-medium text-foreground transition-colors">
             {challenge.title}
           </span>
         </div>
-        <span
-          className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${getCategoryColor(challenge.category)}`}
-        >
-          {challenge.category === "beginner"
-            ? "BGN"
-            : challenge.category === "intermediate"
-              ? "INT"
-              : challenge.category === "advanced"
-                ? "ADV"
-                : "RES"}
+        <span className="inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono shrink-0 mt-0.5">
+          {categoryShortLabel(challenge.category)}
         </span>
       </div>
 
@@ -69,30 +61,26 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
       </div>
 
       {/* Description */}
-      <p className="text-[10px] text-text-muted leading-relaxed">
+      <p className="text-[10px] text-muted-foreground leading-relaxed">
         {challenge.description}
       </p>
 
       {/* Objective */}
       <div>
-        <span className="text-[10px] text-text-dim uppercase tracking-wider">
-          Objective
-        </span>
-        <p className="text-[10px] text-text-muted leading-relaxed mt-0.5">
+        <span className="ga-mono-label">Objective</span>
+        <p className="text-[10px] text-muted-foreground leading-relaxed mt-0.5">
           {challenge.objective}
         </p>
       </div>
 
       {/* Prerequisites */}
       <div>
-        <span className="text-[10px] text-text-dim uppercase tracking-wider">
-          Prerequisites
-        </span>
+        <span className="ga-mono-label">Prerequisites</span>
         <div className="flex flex-wrap gap-1 mt-1">
           {challenge.prerequisites.map((prereq) => (
             <span
               key={prereq}
-              className="text-[9px] px-1.5 py-0.5 border border-border text-text-muted"
+              className="inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-mono"
             >
               {prereq}
             </span>
@@ -102,14 +90,12 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
 
       {/* Tools */}
       <div>
-        <span className="text-[10px] text-text-dim uppercase tracking-wider">
-          Tools
-        </span>
+        <span className="ga-mono-label">Tools</span>
         <div className="flex flex-wrap gap-1 mt-1">
           {challenge.tools.map((tool) => (
             <span
               key={tool}
-              className="text-[9px] px-1.5 py-0.5 border border-accent/20 text-accent/70"
+              className="inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] font-mono"
             >
               {tool}
             </span>
@@ -120,18 +106,25 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
       {/* Hints (expandable) */}
       <button
         onClick={() => setHintsOpen((prev) => !prev)}
-        className="flex items-center gap-1 text-[10px] text-text-dim hover:text-text-muted transition-colors mt-1"
+        className="flex items-center gap-1 text-[10px] text-text-dim hover:text-muted-foreground transition-colors mt-1"
       >
-        {hintsOpen ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+        <PhIcon
+          name={hintsOpen ? "caret-down" : "caret-right"}
+          size={10}
+          color="currentColor"
+        />
         <span>
           {hintsOpen ? "Hide" : "Show"} {challenge.hints.length} hint
           {challenge.hints.length !== 1 ? "s" : ""}
         </span>
       </button>
       {hintsOpen && (
-        <div className="flex flex-col gap-1 pl-3 border-l border-border">
+        <div
+          className="flex flex-col gap-1 pl-3"
+          style={{ borderLeft: "1px solid var(--ga-divider)" }}
+        >
           {challenge.hints.map((hint, i) => (
-            <p key={i} className="text-[10px] text-text-muted leading-relaxed">
+            <p key={i} className="text-[10px] text-muted-foreground leading-relaxed">
               <span className="text-text-dim mr-1">{i + 1}.</span>
               {hint}
             </p>
@@ -158,21 +151,16 @@ export function ChallengesSection() {
   return (
     <section id="challenges" className="scroll-mt-20 mb-10">
       {/* Header divider */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Target size={10} />
-          Challenges
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Challenges" width={420} />
       </div>
 
       {/* Hero card */}
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          Research Challenges
+      <div className="grid-card p-5 mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          Research challenges
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {challenges.length} hands-on challenges from beginner to research
           level — build real projects, implement papers, and push the
           boundaries of what you know.
@@ -183,10 +171,10 @@ export function ChallengesSection() {
       <div className="flex items-center gap-1 mb-2 overflow-x-auto pb-2">
         <button
           onClick={() => setCategoryFilter("all")}
-          className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+          className={`text-xs px-3 py-2 rounded transition-all whitespace-nowrap ${
             categoryFilter === "all"
-              ? "border-border-hover bg-bg-hover text-accent"
-              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           }`}
         >
           All
@@ -195,10 +183,10 @@ export function ChallengesSection() {
           <button
             key={key}
             onClick={() => setCategoryFilter(key)}
-            className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            className={`text-xs px-3 py-2 rounded transition-all whitespace-nowrap ${
               categoryFilter === key
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
           >
             {label}
@@ -210,22 +198,22 @@ export function ChallengesSection() {
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-2">
         <button
           onClick={() => setDifficultyFilter("all")}
-          className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+          className={`text-xs px-3 py-2 rounded transition-all whitespace-nowrap ${
             difficultyFilter === "all"
-              ? "border-border-hover bg-bg-hover text-accent"
-              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           }`}
         >
-          Any Difficulty
+          Any difficulty
         </button>
         {Object.entries(difficultyLabels).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setDifficultyFilter(Number(key))}
-            className={`text-xs px-3 py-2 transition-all border whitespace-nowrap flex items-center gap-1.5 ${
+            className={`text-xs px-3 py-2 rounded transition-all whitespace-nowrap flex items-center gap-1.5 ${
               difficultyFilter === Number(key)
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
           >
             <DifficultyDots level={Number(key)} />
@@ -244,7 +232,7 @@ export function ChallengesSection() {
       {/* Empty state */}
       {filtered.length === 0 && (
         <div className="grid-card p-5 text-center">
-          <p className="text-xs text-text-muted">
+          <p className="text-xs text-muted-foreground">
             No challenges match the current filters.
           </p>
         </div>

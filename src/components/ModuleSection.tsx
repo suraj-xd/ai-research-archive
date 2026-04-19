@@ -25,13 +25,13 @@ export function ModuleSection({ module, index }: ModuleSectionProps) {
   return (
     <section id={module.id} className="scroll-mt-16 mb-8">
       {/* Module Header */}
-      <div className="grid-card p-4 sm:p-5 relative corner-tl corner-tr mb-3">
+      <div className="grid-card p-4 sm:p-5 relative mb-3">
         <div className="flex items-start gap-3">
           <span className="text-[11px] text-text-dim font-mono border border-border px-2 py-0.5 mt-0.5 shrink-0">
             {String(index + 1).padStart(2, "0")}
           </span>
           <div className="flex-1">
-            <h2 className="text-sm font-semibold text-accent mb-1">
+            <h2 className="text-sm font-semibold text-foreground mb-1">
               {module.title}
             </h2>
             <p className="text-xs text-text-muted leading-relaxed">
