@@ -1,6 +1,10 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState, useEffect } from "react";
-import { ExternalLink, Briefcase, Loader2, MapPin, Clock } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import { fetchJobs, jobFilterLabels, type Job, type JobFilter } from "@/data/jobs";
+
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 // Country detection from location string → ISO 3166-1 alpha-2 code
 // flagcdn.com serves free flag PNGs/SVGs from country codes
@@ -68,16 +72,6 @@ function getJobTypeLabel(type?: string): string {
   return type ? map[type] || type : "";
 }
 
-function getJobTypeColor(type?: string): string {
-  const map: Record<string, string> = {
-    full_time: "text-green-400 border-green-400/30",
-    contract: "text-orange-400 border-orange-400/30",
-    freelance: "text-blue-400 border-blue-400/30",
-    internship: "text-purple-400 border-purple-400/30",
-  };
-  return type ? map[type] || "text-text-dim border-border" : "text-text-dim border-border";
-}
-
 export function JobsSection() {
   const [filter, setFilter] = useState<JobFilter>("all");
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -110,27 +104,22 @@ export function JobsSection() {
 
   return (
     <section id="jobs" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Briefcase size={10} />
-          Jobs
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Jobs" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          AI & ML Jobs
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          AI & ML jobs
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Live job listings — India + global remote, updated daily.
           Powered by{" "}
           <a
             href="https://adzuna.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-text-dim hover:text-text underline"
+            className="text-text-dim hover:text-foreground underline"
           >
             Adzuna
           </a>
@@ -139,7 +128,7 @@ export function JobsSection() {
             href="https://remotive.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-text-dim hover:text-text underline"
+            className="text-text-dim hover:text-foreground underline"
           >
             Remotive
           </a>
@@ -153,10 +142,10 @@ export function JobsSection() {
           <button
             key={key}
             onClick={() => setFilter(key as JobFilter)}
-            className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
               filter === key
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
             {label}
@@ -167,22 +156,27 @@ export function JobsSection() {
       {/* Loading state */}
       {loading && (
         <div className="grid-card p-12 flex items-center justify-center">
-          <Loader2 size={16} className="animate-spin text-text-dim mr-2" />
-          <span className="text-xs text-text-muted">Loading jobs...</span>
+          <PhIcon
+            name="spinner-gap"
+            size={16}
+            color="var(--ga-fg3)"
+            className="animate-spin mr-2"
+          />
+          <span className="text-xs text-muted-foreground">Loading jobs...</span>
         </div>
       )}
 
       {/* Error state */}
       {error && !loading && (
         <div className="grid-card p-8 text-center">
-          <p className="text-xs text-red-400">{error}</p>
+          <p className="text-xs text-muted-foreground">{error}</p>
         </div>
       )}
 
       {/* Empty state */}
       {!loading && !error && jobs.length === 0 && (
         <div className="grid-card p-8 text-center">
-          <p className="text-xs text-text-muted">
+          <p className="text-xs text-muted-foreground">
             No jobs found for this category. Try a different filter.
           </p>
         </div>
@@ -208,32 +202,34 @@ export function JobsSection() {
                   <img
                     src={job.companyLogo}
                     alt={job.company}
-                    className="w-8 h-8 rounded shrink-0 object-contain bg-bg-hover"
+                    className="w-8 h-8 rounded shrink-0 object-contain bg-secondary"
                     loading="lazy"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded shrink-0 bg-bg-hover flex items-center justify-center">
-                    <Briefcase size={14} className="text-text-dim" />
+                  <div className="w-8 h-8 rounded shrink-0 bg-secondary flex items-center justify-center">
+                    <PhIcon name="briefcase" size={14} color="var(--ga-fg3)" />
                   </div>
                 )}
 
                 <div className="flex-1 min-w-0">
                   {/* Title */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-xs font-semibold text-accent group-hover:text-white transition-colors truncate">
+                    <span className="text-xs font-semibold text-foreground transition-colors truncate">
                       {job.title}
                     </span>
-                    <ExternalLink
+                    <PhIcon
+                      name="arrow-square-out"
                       size={9}
-                      className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+                      color="var(--ga-fg3)"
+                      className="shrink-0"
                     />
                   </div>
 
                   {/* Company */}
-                  <div className="text-[11px] text-text-muted font-medium mb-1.5">
+                  <div className="text-[11px] text-muted-foreground font-medium mb-1.5">
                     {job.company}
                   </div>
 
@@ -251,7 +247,7 @@ export function JobsSection() {
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                           />
                         ) : (
-                          <MapPin size={8} />
+                          <PhIcon name="map-pin" size={8} color="var(--ga-fg3)" />
                         );
                       })()}
                       <span className="truncate max-w-[120px]">
@@ -259,11 +255,11 @@ export function JobsSection() {
                       </span>
                     </span>
                     <span className="flex items-center gap-0.5">
-                      <Clock size={8} />
+                      <PhIcon name="clock" size={8} color="var(--ga-fg3)" />
                       {job.date}
                     </span>
                     {job.salary && (
-                      <span className="text-green-400 truncate max-w-[100px]">
+                      <span className="text-muted-foreground truncate max-w-[100px]">
                         {job.salary}
                       </span>
                     )}
@@ -271,19 +267,13 @@ export function JobsSection() {
 
                   {/* Tags + source */}
                   <div className="flex flex-wrap items-center gap-1">
-                    <span
-                      className={`text-[8px] px-1 py-0.5 border ${
-                        job.source === "Adzuna"
-                          ? "text-cyan-400 border-cyan-400/30"
-                          : "text-violet-400 border-violet-400/30"
-                      }`}
-                    >
+                    <span className={NEUTRAL_CHIP}>
                       {job.source === "Adzuna" ? "IN" : "REMOTE"}
                     </span>
                     {job.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="text-[8px] px-1 py-0.5 border border-border text-text-dim truncate max-w-[80px]"
+                        className="inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] tracking-wider font-mono truncate max-w-[80px]"
                       >
                         {tag}
                       </span>
@@ -293,9 +283,7 @@ export function JobsSection() {
 
                 {/* Job type badge */}
                 {job.jobType && (
-                  <span
-                    className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${getJobTypeColor(job.jobType)}`}
-                  >
+                  <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
                     {getJobTypeLabel(job.jobType)}
                   </span>
                 )}

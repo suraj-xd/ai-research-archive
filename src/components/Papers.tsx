@@ -1,22 +1,12 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { ExternalLink, FlaskConical } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import { papers, paperCategoryLabels } from "@/data/papers";
 
 type Filter = "all" | string;
 
-function getCategoryColor(cat: string): string {
-  const map: Record<string, string> = {
-    architecture: "text-purple-400 border-purple-400/30",
-    training: "text-blue-400 border-blue-400/30",
-    reasoning: "text-orange-400 border-orange-400/30",
-    rag: "text-green-400 border-green-400/30",
-    agents: "text-cyan-400 border-cyan-400/30",
-    efficiency: "text-yellow-400 border-yellow-400/30",
-    foundational: "text-amber-400 border-amber-400/30",
-    "ilya-30u30": "text-rose-400 border-rose-400/30",
-  };
-  return map[cat] || "text-text-dim border-border";
-}
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 function getCategoryShortLabel(cat: string): string {
   const map: Record<string, string> = {
@@ -49,20 +39,15 @@ export function PapersSection() {
 
   return (
     <section id="papers" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <FlaskConical size={10} />
-          Research Papers
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Research papers" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          Key Research Papers
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          Key research papers
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {papers.length} landmark and cutting-edge papers — the research
           that shapes how models are built, trained, and deployed today.
         </p>
@@ -71,10 +56,10 @@ export function PapersSection() {
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-2">
         <button
           onClick={() => setFilter("all")}
-          className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+          className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
             filter === "all"
-              ? "border-border-hover bg-bg-hover text-accent"
-              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
           All
@@ -83,10 +68,10 @@ export function PapersSection() {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
               filter === key
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
             {label}
@@ -114,24 +99,24 @@ export function PapersSection() {
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+                <span className="text-xs font-medium text-foreground transition-colors">
                   {paper.title}
                 </span>
-                <ExternalLink
+                <PhIcon
+                  name="arrow-square-out"
                   size={9}
-                  className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+                  color="var(--ga-fg3)"
+                  className="shrink-0"
                 />
               </div>
               <div className="text-[10px] text-text-dim mb-1">
                 {paper.authors}
               </div>
-              <p className="text-[10px] text-text-muted leading-relaxed line-clamp-3">
+              <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3">
                 {paper.description}
               </p>
             </div>
-            <span
-              className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${getCategoryColor(paper.category)}`}
-            >
+            <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
               {getCategoryShortLabel(paper.category)}
             </span>
           </a>

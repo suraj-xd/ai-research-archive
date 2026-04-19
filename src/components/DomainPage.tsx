@@ -1,6 +1,7 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { ExternalLink } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import { getFaviconUrl, getYouTubeId, getPreviewUrl } from "@/utils/previews";
 
 export interface DomainResource {
@@ -24,16 +25,8 @@ interface DomainPageProps {
   generalResources: DomainResource[];
 }
 
-const typeColors: Record<string, string> = {
-  book: "text-amber-400 border-amber-400/30",
-  course: "text-blue-400 border-blue-400/30",
-  tutorial: "text-green-400 border-green-400/30",
-  explainer: "text-purple-400 border-purple-400/30",
-  video: "text-red-400 border-red-400/30",
-  tool: "text-cyan-400 border-cyan-400/30",
-  paper: "text-orange-400 border-orange-400/30",
-  repo: "text-emerald-400 border-emerald-400/30",
-};
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 const typeLabels: Record<string, string> = {
   book: "BOOK",
@@ -88,16 +81,14 @@ function ResourceCard({ resource }: { resource: DomainResource }) {
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
           <div className="flex-1 min-w-0">
-            <span className="text-xs font-medium text-text group-hover:text-accent transition-colors line-clamp-2">
+            <span className="text-xs font-medium text-foreground transition-colors line-clamp-2">
               {resource.title}
             </span>
             {resource.author && (
               <div className="text-[10px] text-text-dim mt-0.5">{resource.author}</div>
             )}
           </div>
-          <span
-            className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 ${typeColors[resource.type]}`}
-          >
+          <span className={`${NEUTRAL_CHIP} shrink-0`}>
             {typeLabels[resource.type]}
           </span>
         </div>
@@ -123,21 +114,21 @@ function ResourceCard({ resource }: { resource: DomainResource }) {
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+          <span className="text-xs font-medium text-foreground transition-colors">
             {resource.title}
           </span>
-          <ExternalLink
+          <PhIcon
+            name="arrow-square-out"
             size={9}
-            className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+            color="var(--ga-fg3)"
+            className="shrink-0"
           />
         </div>
         {resource.author && (
           <div className="text-[10px] text-text-dim">{resource.author}</div>
         )}
       </div>
-      <span
-        className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${typeColors[resource.type]}`}
-      >
+      <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
         {typeLabels[resource.type]}
       </span>
     </a>
@@ -184,18 +175,13 @@ export function DomainPage({
 
   return (
     <section className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Icon size={10} />
-          {title}
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label={title} width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">{title}</h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">{title}</h2>
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {totalResources} resources — {description}
         </p>
       </div>
@@ -212,10 +198,10 @@ export function DomainPage({
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+                className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
                   activeTab === tab
-                    ? "border-border-hover bg-bg-hover text-accent"
-                    : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 {tab}

@@ -1,18 +1,12 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { ExternalLink, BookOpen } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import { guides, guideCategoryLabels } from "@/data/guides";
 
 type Filter = "all" | string;
 
-function getCategoryColor(cat: string): string {
-  const map: Record<string, string> = {
-    prompting: "text-yellow-400 border-yellow-400/30",
-    agents: "text-blue-400 border-blue-400/30",
-    enterprise: "text-green-400 border-green-400/30",
-    learning: "text-purple-400 border-purple-400/30",
-  };
-  return map[cat] || "text-text-dim border-border";
-}
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 function getCategoryShortLabel(cat: string): string {
   const map: Record<string, string> = {
@@ -41,20 +35,15 @@ export function GuidesSection() {
 
   return (
     <section id="guides" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <BookOpen size={10} />
-          Official Guides
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Official guides" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          Official AI Guides & Playbooks
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          Official AI guides and playbooks
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {guides.length} curated guides from OpenAI, Google, Anthropic, and
           top practitioners — prompt engineering, building agents, enterprise
           AI, and learning tools.
@@ -64,10 +53,10 @@ export function GuidesSection() {
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-2">
         <button
           onClick={() => setFilter("all")}
-          className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+          className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
             filter === "all"
-              ? "border-border-hover bg-bg-hover text-accent"
-              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
           All
@@ -76,10 +65,10 @@ export function GuidesSection() {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
               filter === key
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
             {label}
@@ -107,24 +96,24 @@ export function GuidesSection() {
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-xs font-medium text-text group-hover:text-accent transition-colors">
+                <span className="text-xs font-medium text-foreground transition-colors">
                   {guide.title}
                 </span>
-                <ExternalLink
+                <PhIcon
+                  name="arrow-square-out"
                   size={9}
-                  className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+                  color="var(--ga-fg3)"
+                  className="shrink-0"
                 />
               </div>
               <div className="text-[10px] text-text-dim mb-1">
                 {guide.author}
               </div>
-              <p className="text-[10px] text-text-muted leading-relaxed line-clamp-2">
+              <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">
                 {guide.description}
               </p>
             </div>
-            <span
-              className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${getCategoryColor(guide.category)}`}
-            >
+            <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
               {getCategoryShortLabel(guide.category)}
             </span>
           </a>

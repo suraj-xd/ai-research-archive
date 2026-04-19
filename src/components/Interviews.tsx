@@ -1,23 +1,15 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { Brain } from "lucide-react";
+import { ZigDivider } from "@/components/brand";
 import {
   interviewQuestions,
   interviewCategoryLabels,
-  difficultyColors,
 } from "@/data/interviews";
 
 type Filter = "all" | string;
 
-function getCategoryColor(cat: string): string {
-  const map: Record<string, string> = {
-    "core-ml": "text-blue-400 border-blue-400/30",
-    llms: "text-purple-400 border-purple-400/30",
-    "system-design": "text-orange-400 border-orange-400/30",
-    python: "text-green-400 border-green-400/30",
-    cv: "text-cyan-400 border-cyan-400/30",
-  };
-  return map[cat] || "text-text-dim border-border";
-}
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 export function InterviewsSection() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -29,20 +21,15 @@ export function InterviewsSection() {
 
   return (
     <section id="interviews" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Brain size={10} />
-          Interview Prep
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Interview prep" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          Interview Questions
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          Interview questions
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {interviewQuestions.length} curated questions across ML fundamentals,
           LLMs, system design, and Python — the topics that come up in real AI
           interviews.
@@ -52,10 +39,10 @@ export function InterviewsSection() {
       <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-2">
         <button
           onClick={() => setFilter("all")}
-          className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+          className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
             filter === "all"
-              ? "border-border-hover bg-bg-hover text-accent"
-              : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
           All
@@ -64,10 +51,10 @@ export function InterviewsSection() {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            className={`text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
               filter === key
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
             {label}
@@ -82,25 +69,21 @@ export function InterviewsSection() {
             className="grid-card group p-3 flex flex-col gap-2 relative"
           >
             <div className="flex items-start justify-between gap-2">
-              <span className="text-xs font-medium text-text leading-relaxed">
+              <span className="text-xs font-medium text-foreground leading-relaxed">
                 {q.question}
               </span>
-              <span
-                className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${difficultyColors[q.difficulty]}`}
-              >
+              <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
                 {q.difficulty}
               </span>
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span
-                className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border ${getCategoryColor(q.category)}`}
-              >
+              <span className={NEUTRAL_CHIP}>
                 {interviewCategoryLabels[q.category]}
               </span>
               {q.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[8px] text-text-dim border border-border px-1 py-0.5"
+                  className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded font-mono"
                 >
                   {tag}
                 </span>

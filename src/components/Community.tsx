@@ -1,21 +1,23 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { ExternalLink, Users, Building2, MessageCircle } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import {
   xProfiles,
-  categoryColors,
   communityServers,
   type XProfile,
   type CommunityServer,
 } from "@/data/community";
 import {
   organizations,
-  orgCategoryColors,
   type Organization,
 } from "@/data/organizations";
 
 type CategoryFilter = "all" | XProfile["category"];
 type OrgFilter = "all" | Organization["category"];
 type PlatformFilter = "all" | CommunityServer["platform"];
+
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 function getInitials(name: string): string {
   return name
@@ -34,21 +36,6 @@ function getDomain(url: string): string {
   }
 }
 
-function getColor(handle: string): string {
-  const colors = [
-    "bg-purple-400/20 text-purple-400",
-    "bg-blue-400/20 text-blue-400",
-    "bg-green-400/20 text-green-400",
-    "bg-orange-400/20 text-orange-400",
-    "bg-red-400/20 text-red-400",
-  ];
-  let hash = 0;
-  for (let i = 0; i < handle.length; i++) {
-    hash = handle.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-}
-
 function DiscordIcon({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -64,6 +51,8 @@ function RedditIcon({ size = 14 }: { size?: number }) {
     </svg>
   );
 }
+
+const NEUTRAL_AVATAR = "bg-secondary text-muted-foreground";
 
 export function Community() {
   const [filter, setFilter] = useState<CategoryFilter>("all");
@@ -83,23 +72,38 @@ export function Community() {
       ? xProfiles
       : xProfiles.filter((p) => p.category === filter);
 
+  const categoryShortLabel = (cat: XProfile["category"]): string =>
+    cat === "researcher"
+      ? "RES"
+      : cat === "educator"
+        ? "EDU"
+        : cat === "builder"
+          ? "BUILD"
+          : "LEAD";
+
+  const orgShortLabel = (cat: Organization["category"]): string =>
+    cat === "lab"
+      ? "LAB"
+      : cat === "bigtech"
+        ? "TECH"
+        : cat === "startup"
+          ? "NEW"
+          : cat === "academic"
+            ? "ACAD"
+            : "GOV";
+
   return (
     <section id="community" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Users size={10} />
-          Community
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="Community" width={420} />
       </div>
 
       {/* Header */}
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          Who to Follow on X
+      <div className="grid-card p-5 relative mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          Who to follow on X
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {xProfiles.length} people and accounts in the ML/AI space worth
           following — researchers, educators, builders, and thinkers who share
           resources, papers, and insights.
@@ -112,10 +116,10 @@ export function Community() {
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+            className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
               filter === f.id
-                ? "border-border-hover bg-bg-hover text-accent"
-                : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
             {f.label}
@@ -142,7 +146,7 @@ export function Community() {
           >
             {/* Avatar */}
             <div
-              className={`w-10 h-10 rounded-full shrink-0 overflow-hidden relative ${getColor(profile.handle)}`}
+              className={`w-10 h-10 rounded-full shrink-0 overflow-hidden relative ${NEUTRAL_AVATAR}`}
             >
               <div className="w-full h-full flex items-center justify-center text-[11px] font-semibold">
                 {getInitials(profile.name)}
@@ -161,35 +165,27 @@ export function Community() {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-xs font-medium text-text group-hover:text-accent transition-colors truncate">
+                <span className="text-xs font-medium text-foreground transition-colors truncate">
                   {profile.name}
                 </span>
-                <ExternalLink
+                <PhIcon
+                  name="arrow-square-out"
                   size={9}
-                  className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+                  color="var(--ga-fg3)"
+                  className="shrink-0"
                 />
               </div>
               <div className="text-[10px] text-text-dim mb-1">
                 @{profile.handle}
               </div>
-              <p className="text-[10px] text-text-muted leading-relaxed line-clamp-2">
+              <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">
                 {profile.description}
               </p>
             </div>
 
             {/* Category badge */}
-            <span
-              className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${
-                categoryColors[profile.category]
-              }`}
-            >
-              {profile.category === "researcher"
-                ? "RES"
-                : profile.category === "educator"
-                  ? "EDU"
-                  : profile.category === "builder"
-                    ? "BUILD"
-                    : "LEAD"}
+            <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
+              {categoryShortLabel(profile.category)}
             </span>
           </a>
         ))}
@@ -197,14 +193,14 @@ export function Community() {
 
       {/* Organizations Section */}
       <div className="mt-8">
-        <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
+        <div className="grid-card p-5 relative mb-4">
           <div className="flex items-center gap-2 mb-1">
-            <Building2 size={14} className="text-text-muted" />
-            <h2 className="text-sm font-semibold text-accent">
-              AI Research Organizations
+            <PhIcon name="buildings" size={14} color="var(--ga-fg2)" />
+            <h2 className="text-sm font-semibold text-foreground">
+              AI research organizations
             </h2>
           </div>
-          <p className="text-xs text-text-muted leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             {organizations.length} labs, companies, and institutions pushing the
             frontier of AI research — from Silicon Valley to Beijing to Europe.
           </p>
@@ -225,10 +221,10 @@ export function Community() {
             <button
               key={f.id}
               onClick={() => setOrgFilter(f.id)}
-              className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+              className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
                 orgFilter === f.id
-                  ? "border-border-hover bg-bg-hover text-accent"
-                  : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               {f.label}
@@ -250,7 +246,7 @@ export function Community() {
               className="grid-card group p-3 flex items-start gap-3 relative"
             >
               <div
-                className={`w-10 h-10 rounded-full shrink-0 overflow-hidden relative ${getColor(org.name)}`}
+                className={`w-10 h-10 rounded-full shrink-0 overflow-hidden relative ${NEUTRAL_AVATAR}`}
               >
                 <div className="w-full h-full flex items-center justify-center text-[11px] font-semibold">
                   {getInitials(org.name)}
@@ -267,51 +263,41 @@ export function Community() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-xs font-medium text-text group-hover:text-accent transition-colors truncate">
+                  <span className="text-xs font-medium text-foreground transition-colors truncate">
                     {org.name}
                   </span>
-                  <ExternalLink
+                  <PhIcon
+                    name="arrow-square-out"
                     size={9}
-                    className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+                    color="var(--ga-fg3)"
+                    className="shrink-0"
                   />
                 </div>
                 <div className="text-[10px] text-text-dim mb-1">
                   {org.country}
                 </div>
-                <p className="text-[10px] text-text-muted leading-relaxed line-clamp-2">
+                <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">
                   {org.description}
                 </p>
               </div>
-              <span
-                className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${
-                  orgCategoryColors[org.category]
-                }`}
-              >
-                {org.category === "lab"
-                  ? "LAB"
-                  : org.category === "bigtech"
-                    ? "TECH"
-                    : org.category === "startup"
-                      ? "NEW"
-                      : org.category === "academic"
-                        ? "ACAD"
-                        : "GOV"}
+              <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
+                {orgShortLabel(org.category)}
               </span>
             </a>
           ))}
         </div>
       </div>
 
-      {/* Discord & Reddit Communities */}
+      {/* Twitter, Discord & Reddit Communities */}
       <div className="mt-8">
-        <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
+        <div className="grid-card p-5 relative mb-4">
           <div className="flex items-center gap-2 mb-1">
-            <MessageCircle size={14} className="text-text-muted" />
-            <h2 className="text-sm font-semibold text-accent">
-              Discord & Reddit Communities
+            <PhIcon name="chat-circle" size={14} color="var(--ga-fg2)" />
+            <h2 className="text-sm font-semibold text-foreground">
+              Twitter, Discord & Reddit communities
             </h2>
           </div>
-          <p className="text-xs text-text-muted leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             {communityServers.length} active communities for discussion,
             collaboration, and staying up-to-date with ML/AI developments.
           </p>
@@ -322,6 +308,7 @@ export function Community() {
           {(
             [
               { id: "all", label: "All" },
+              { id: "twitter", label: "X" },
               { id: "discord", label: "Discord" },
               { id: "reddit", label: "Reddit" },
             ] as { id: PlatformFilter; label: string }[]
@@ -329,12 +316,13 @@ export function Community() {
             <button
               key={f.id}
               onClick={() => setPlatformFilter(f.id)}
-              className={`flex items-center gap-1.5 text-xs px-3 py-2 transition-all border whitespace-nowrap ${
+              className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded transition-colors whitespace-nowrap ${
                 platformFilter === f.id
-                  ? "border-border-hover bg-bg-hover text-accent"
-                  : "border-transparent text-text-muted hover:text-text hover:bg-bg-hover"
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
+              {f.id === "twitter" && <PhIcon name="x-logo" size={12} color="currentColor" />}
               {f.id === "discord" && <DiscordIcon size={12} />}
               {f.id === "reddit" && <RedditIcon size={12} />}
               {f.label}
@@ -360,38 +348,34 @@ export function Community() {
               rel="noopener noreferrer"
               className="grid-card group p-3 flex items-start gap-3 relative"
             >
-              <div
-                className={`w-9 h-9 flex items-center justify-center shrink-0 ${
-                  server.platform === "discord"
-                    ? "bg-indigo-400/20 text-indigo-400"
-                    : "bg-orange-400/20 text-orange-400"
-                }`}
-              >
+              <div className="w-9 h-9 flex items-center justify-center shrink-0 rounded bg-secondary text-muted-foreground">
                 {server.platform === "discord" ? (
                   <DiscordIcon size={18} />
-                ) : (
+                ) : server.platform === "reddit" ? (
                   <RedditIcon size={18} />
+                ) : (
+                  <PhIcon name="x-logo" size={16} color="currentColor" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-text group-hover:text-accent transition-colors truncate">
+                  <span className="text-xs font-medium text-foreground transition-colors truncate">
                     {server.name}
                   </span>
-                  <ExternalLink
+                  <PhIcon
+                    name="arrow-square-out"
                     size={9}
-                    className="text-text-dim group-hover:text-text-muted transition-colors shrink-0"
+                    color="var(--ga-fg3)"
+                    className="shrink-0"
                   />
                 </div>
               </div>
-              <span
-                className={`text-[8px] uppercase tracking-wider px-1 py-0.5 border shrink-0 mt-0.5 ${
-                  server.platform === "discord"
-                    ? "text-indigo-400 border-indigo-400/30"
-                    : "text-orange-400 border-orange-400/30"
-                }`}
-              >
-                {server.platform === "discord" ? "DISCORD" : "REDDIT"}
+              <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
+                {server.platform === "discord"
+                  ? "DISCORD"
+                  : server.platform === "reddit"
+                    ? "REDDIT"
+                    : "X COMMUNITY"}
               </span>
             </a>
           ))}

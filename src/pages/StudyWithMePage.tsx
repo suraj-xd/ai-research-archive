@@ -1,5 +1,6 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState, useEffect, useRef } from "react";
-import { ExternalLink, Users } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 import { studyBuddies, studyTweets, TWEETS_PER_PAGE } from "@/data/studyWithMe";
 
 declare global {
@@ -15,6 +16,8 @@ declare global {
     };
   }
 }
+
+const NEUTRAL_AVATAR = "bg-secondary text-muted-foreground";
 
 function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
@@ -75,15 +78,15 @@ function TwitterEmbed({ tweetId, isDark }: { tweetId: string; isDark: boolean })
       {loading && (
         <div className="grid-card p-6 animate-pulse flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-bg-hover" />
+            <div className="w-10 h-10 rounded-full bg-muted" />
             <div className="flex-1">
-              <div className="h-3 bg-bg-hover w-24 mb-1" />
-              <div className="h-2 bg-bg-hover w-16" />
+              <div className="h-3 bg-muted w-24 mb-1" />
+              <div className="h-2 bg-muted w-16" />
             </div>
           </div>
-          <div className="h-3 bg-bg-hover w-full" />
-          <div className="h-3 bg-bg-hover w-3/4" />
-          <div className="h-24 bg-bg-hover" />
+          <div className="h-3 bg-muted w-full" />
+          <div className="h-3 bg-muted w-3/4" />
+          <div className="h-24 bg-muted" />
         </div>
       )}
       <div ref={containerRef} />
@@ -93,7 +96,7 @@ function TwitterEmbed({ tweetId, isDark }: { tweetId: string; isDark: boolean })
 
 export default function StudyWithMePage() {
   const [visibleCount, setVisibleCount] = useState(TWEETS_PER_PAGE);
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const displayedTweets = studyTweets.slice(0, visibleCount);
   const hasMore = visibleCount < studyTweets.length;
   const remaining = studyTweets.length - visibleCount;
@@ -113,26 +116,21 @@ export default function StudyWithMePage() {
   return (
     <section className="mb-10">
       {/* Section divider */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Users size={10} />
-          Study With Me
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-6">
+        <ZigDivider label="Study With Me" width={420} />
       </div>
 
       {/* Header card */}
-      <div className="grid-card p-5 sm:p-6 relative corner-tl corner-tr mb-6">
-        <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-text-dim border border-border px-3 py-1.5 mb-4">
-          <Users size={10} />
+      <div className="grid-card p-5 sm:p-6 relative mb-6">
+        <div className="inline-flex items-center gap-1.5 ga-mono-label mb-4">
+          <PhIcon name="users-three" size={10} color="var(--ga-fg3)" />
           Study With Me
         </div>
 
-        <h2 className="text-lg sm:text-xl font-bold text-accent mb-2">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">
           Learn together, grow faster
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed max-w-2xl mb-5">
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl mb-5">
           People from around the world documenting their AI/ML learning journey
           daily. Follow along, share your progress, and stay accountable with the
           community.
@@ -147,7 +145,7 @@ export default function StudyWithMePage() {
                 href={`https://x.com/${buddy.handle}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-bg-card hover:scale-110 transition-transform ${buddy.color}`}
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-card hover:scale-110 transition-transform ${NEUTRAL_AVATAR}`}
                 style={{ zIndex: studyBuddies.length - i }}
                 title={`@${buddy.handle}`}
               >
@@ -155,17 +153,19 @@ export default function StudyWithMePage() {
               </a>
             ))}
           </div>
-          <span className="text-xs text-text-muted">
+          <span className="text-xs text-muted-foreground">
             + {studyBuddies.length * 10} studying right now
           </span>
         </div>
       </div>
 
+      {/* Zig divider before learners */}
+      <div className="my-6">
+        <ZigDivider label="Current Batch" />
+      </div>
+
       {/* Learners list */}
       <div className="grid-card p-4 mb-6">
-        <div className="text-[10px] uppercase tracking-widest text-text-dim mb-3">
-          Current Batch
-        </div>
         <div className="flex flex-wrap gap-2">
           {studyBuddies.map((buddy) => (
             <a
@@ -173,14 +173,14 @@ export default function StudyWithMePage() {
               href={`https://x.com/${buddy.handle}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-2.5 py-1.5 border border-border hover:border-border-hover hover:bg-bg-hover transition-all group"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded bg-secondary hover:bg-muted transition-colors group"
             >
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${buddy.color}`}
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${NEUTRAL_AVATAR}`}
               >
                 {getInitials(buddy.name)}
               </div>
-              <span className="text-[11px] text-text-muted group-hover:text-text transition-colors">
+              <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors">
                 @{buddy.handle}
               </span>
             </a>
@@ -188,18 +188,9 @@ export default function StudyWithMePage() {
         </div>
       </div>
 
-      {/* Tweet feed */}
-      <div className="text-[10px] uppercase tracking-widest text-text-dim mb-3 flex items-center gap-2">
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="text-text-dim"
-        >
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-        Daily Posts
+      {/* Zig divider before feed */}
+      <div className="my-6">
+        <ZigDivider label="Daily Posts" />
       </div>
 
       <div className="columns-1 sm:columns-2 gap-3 space-y-3">
@@ -213,7 +204,7 @@ export default function StudyWithMePage() {
       {hasMore && (
         <button
           onClick={() => setVisibleCount((c) => Math.min(c + TWEETS_PER_PAGE, studyTweets.length))}
-          className="mt-4 w-full grid-card p-3 text-center text-xs text-text-muted hover:text-accent hover:border-border-hover transition-all"
+          className="mt-4 w-full grid-card p-3 text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           Load {Math.min(remaining, TWEETS_PER_PAGE)} more posts
           <span className="text-text-dim ml-1.5">
@@ -223,8 +214,8 @@ export default function StudyWithMePage() {
       )}
 
       {/* CTA */}
-      <div className="grid-card p-5 mt-6 text-center relative corner-tl corner-tr">
-        <p className="text-xs text-text-muted mb-3">
+      <div className="grid-card p-5 mt-6 text-center relative">
+        <p className="text-xs text-muted-foreground mb-3">
           Documenting your AI/ML learning journey? Share your daily posts and
           join the study group.
         </p>
@@ -232,7 +223,7 @@ export default function StudyWithMePage() {
           href="https://x.com/notsurajgaud"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[11px] bg-bg-hover border border-border px-4 py-2 hover:border-border-hover transition-colors text-text-muted hover:text-accent"
+          className="inline-flex items-center gap-1.5 text-[11px] bg-secondary rounded px-4 py-2 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
         >
           <svg
             width="12"
@@ -243,7 +234,7 @@ export default function StudyWithMePage() {
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
           </svg>
           DM @notsurajgaud to join
-          <ExternalLink size={9} />
+          <PhIcon name="arrow-square-out" size={9} color="currentColor" />
         </a>
       </div>
     </section>

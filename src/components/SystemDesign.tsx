@@ -1,5 +1,6 @@
+// Refactored to General Agents brand — 2026-04-19
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Server } from "lucide-react";
+import { PhIcon, ZigDivider } from "@/components/brand";
 
 const topics = [
   {
@@ -66,20 +67,15 @@ export function SystemDesign() {
 
   return (
     <section id="system-design" className="scroll-mt-20 mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-[10px] uppercase tracking-widest text-text-dim flex items-center gap-1.5">
-          <Server size={10} />
-          System Design
-        </span>
-        <div className="h-px bg-border flex-1" />
+      <div className="my-4">
+        <ZigDivider label="System Design" width={420} />
       </div>
 
-      <div className="grid-card p-5 relative corner-tl corner-tr mb-4">
-        <h2 className="text-sm font-semibold text-accent mb-1">
-          ML System Design 101
+      <div className="grid-card p-5 mb-4">
+        <h2 className="text-sm font-semibold text-foreground mb-1">
+          ML system design 101
         </h2>
-        <p className="text-xs text-text-muted leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Designing production ML systems goes far beyond model accuracy.
           Learn the architecture patterns, infrastructure decisions, and
           operational practices that separate research prototypes from
@@ -91,28 +87,31 @@ export function SystemDesign() {
         {topics.map((topic, i) => {
           const isExpanded = expanded.has(topic.id);
           return (
-            <div key={topic.id} className="grid-card relative">
+            <div key={topic.id} className="grid-card">
               <button
                 onClick={() => toggle(topic.id)}
-                className="w-full text-left flex items-center gap-3 p-3 sm:p-4 hover:bg-bg-hover transition-colors"
+                className="w-full text-left flex items-center gap-3 p-4 sm:p-5 hover:bg-muted/50 transition-colors"
               >
                 <span className="text-[10px] text-text-dim font-mono w-6 shrink-0">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                {isExpanded ? (
-                  <ChevronDown size={12} className="text-text-dim shrink-0" />
-                ) : (
-                  <ChevronRight size={12} className="text-text-dim shrink-0" />
-                )}
-                <span className="text-xs text-text flex-1">{topic.title}</span>
-                <span className="text-[9px] text-text-dim border border-border px-1.5 py-0.5">
-                  NOTES
+                <PhIcon
+                  name={isExpanded ? "caret-down" : "caret-right"}
+                  size={12}
+                  color="var(--ga-fg2)"
+                />
+                <span className="text-xs text-foreground flex-1">{topic.title}</span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono">
+                  Notes
                 </span>
               </button>
 
               {isExpanded && (
-                <div className="border-t border-border p-4 sm:p-5 fade-in">
-                  <p className="text-xs text-text-muted leading-relaxed">
+                <div
+                  className="px-4 pb-4 sm:px-5 sm:pb-5 pt-4 sm:pt-5 fade-in"
+                  style={{ borderTop: "1px solid var(--ga-divider)" }}
+                >
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {topic.notes}
                   </p>
                 </div>

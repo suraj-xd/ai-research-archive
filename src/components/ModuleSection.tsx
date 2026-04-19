@@ -1,7 +1,11 @@
-import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+// Refactored to General Agents brand — 2026-04-19
 import { useState, type ReactNode } from "react";
 import type { Module } from "@/data/curriculum";
 import { YouTubeEmbed } from "./YouTubeEmbed";
+import { PhIcon } from "@/components/brand";
+
+const NEUTRAL_CHIP =
+  "inline-flex items-center px-2 py-0.5 rounded bg-secondary text-muted-foreground text-[10px] uppercase tracking-wider font-mono";
 
 interface ModuleSectionProps {
   module: Module;
@@ -25,13 +29,13 @@ export function ModuleSection({ module, index }: ModuleSectionProps) {
   return (
     <section id={module.id} className="scroll-mt-16 mb-8">
       {/* Module Header */}
-      <div className="grid-card p-4 sm:p-5 relative corner-tl corner-tr mb-3">
+      <div className="grid-card p-4 sm:p-5 relative mb-3">
         <div className="flex items-start gap-3">
           <span className="text-[11px] text-text-dim font-mono border border-border px-2 py-0.5 mt-0.5 shrink-0">
             {String(index + 1).padStart(2, "0")}
           </span>
           <div className="flex-1">
-            <h2 className="text-sm font-semibold text-accent mb-1">
+            <h2 className="text-sm font-semibold text-foreground mb-1">
               {module.title}
             </h2>
             <p className="text-xs text-text-muted leading-relaxed">
@@ -46,7 +50,7 @@ export function ModuleSection({ module, index }: ModuleSectionProps) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 hover:text-text-muted transition-colors"
                 >
-                  GitHub <ExternalLink size={8} />
+                  GitHub <PhIcon name="arrow-square-out" size={10} color="var(--ga-fg2)" />
                 </a>
               )}
             </div>
@@ -69,35 +73,30 @@ export function ModuleSection({ module, index }: ModuleSectionProps) {
               {/* Lesson Header */}
               <button
                 onClick={() => toggleLesson(lesson.id)}
-                className="w-full text-left flex items-center gap-3 p-3 sm:p-4 hover:bg-bg-hover transition-colors"
+                className="w-full text-left flex items-center gap-3 p-4 sm:p-5 hover:bg-muted/60 transition-colors"
               >
-                <span className="text-[10px] text-text-dim font-mono w-8 shrink-0">
+                <span className="text-[11px] text-muted-foreground font-mono w-9 shrink-0 tracking-wider">
                   {String(index + 1).padStart(2, "0")}.
                   {String(lessonIdx + 1).padStart(2, "0")}
                 </span>
-                {isExpanded ? (
-                  <ChevronDown size={12} className="text-text-dim shrink-0" />
-                ) : (
-                  <ChevronRight size={12} className="text-text-dim shrink-0" />
-                )}
-                <span className="text-xs text-text flex-1">{lesson.title}</span>
-                <div className="flex items-center gap-2">
-                  {lesson.youtubeId && (
-                    <span className="text-[9px] text-youtube/70 border border-youtube/20 px-1.5 py-0.5">
-                      VIDEO
-                    </span>
-                  )}
-                  {lesson.notes && (
-                    <span className="text-[9px] text-text-dim border border-border px-1.5 py-0.5">
-                      NOTES
-                    </span>
-                  )}
+                <PhIcon
+                  name={isExpanded ? "caret-down" : "caret-right"}
+                  size={12}
+                  color="var(--ga-fg2)"
+                />
+                <span className="text-sm text-foreground flex-1">{lesson.title}</span>
+                <div className="flex items-center gap-1.5">
+                  {lesson.youtubeId && <span className={NEUTRAL_CHIP}>Video</span>}
+                  {lesson.notes && <span className={NEUTRAL_CHIP}>Notes</span>}
                 </div>
               </button>
 
               {/* Lesson Content */}
               {isExpanded && (
-                <div className="border-t border-border p-4 sm:p-5 fade-in">
+                <div
+                  className="px-4 pb-4 sm:px-5 sm:pb-5 fade-in"
+                  style={{ borderTop: "1px solid var(--ga-divider)", paddingTop: 16 }}
+                >
                   {lesson.youtubeId && (
                     <div className="mb-4">
                       <YouTubeEmbed
@@ -121,7 +120,7 @@ export function ModuleSection({ module, index }: ModuleSectionProps) {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-[11px] text-text-dim hover:text-text-muted transition-colors"
                       >
-                        Watch on YouTube <ExternalLink size={9} />
+                        Watch on YouTube <PhIcon name="arrow-square-out" size={10} color="var(--ga-fg2)" />
                       </a>
                     </div>
                   )}

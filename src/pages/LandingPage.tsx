@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
 import { useGitHubStars } from "@/hooks/useGitHubStars";
+import { PhIcon } from "@/components/brand";
+import { LandingLauncher } from "@/components/landing/LandingLauncher";
 import { books, playlists, channels, platforms } from "@/data/resources";
 import { modules } from "@/data/curriculum";
 import { xProfiles } from "@/data/community";
@@ -20,89 +21,99 @@ import { challenges } from "@/data/challenges";
 import { interviewQuestions } from "@/data/interviews";
 
 interface CardItem {
-  type: string;
-  height: number;
-  data: Record<string, string>;
+	type: string;
+	height: number;
+	data: Record<string, string>;
 }
 
-// YouTube playlist ID → first video ID
-const YT_THUMBS: Record<string, string> = {
-  PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab: "fNk_zzaMoSs",
-  PLZHQObOWTQDNU6R1_67000Dx_ZCJB_3pi: "aircAruvnKk",
-  PLZHQObOWTQDMsr9K_rj53DwVRMYO3t5Yr: "WUvTyaaNkzM",
-  PLE7DDD91010BC51F8: "ZK3O402wf1c",
-  PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF: "Gv9_4yMHFhI",
-  PLoROMvodv4rMiGQp3WXShtMGgzqpfVfbU: "jGwO_UgTS7I",
-  PLTKMiZHVd_2IIEsoJrWACkIxLRdfMlw11: "kCc8FmEb1nY",
-};
+// Playlist ID → first video ID, baked at build time by
+// scripts/fetch-playlist-thumbs.mjs (re-run when playlists change).
+import playlistThumbs from "@/data/playlistThumbs.json";
 
 function getPlaylistThumb(url: string): string | null {
-  try {
-    const u = new URL(url);
-    const listId = u.searchParams.get("list");
-    if (!listId) return null;
-    const normalized = listId.replace(/-/g, "_");
-    const videoId = YT_THUMBS[normalized] || YT_THUMBS[listId];
-    if (videoId) return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-  } catch { /* */ }
-  return null;
+	try {
+		const listId = new URL(url).searchParams.get("list");
+		if (!listId) return null;
+		const videoId = (playlistThumbs as Record<string, string>)[listId];
+		if (videoId)
+			return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+	} catch {
+		/* */
+	}
+	return null;
 }
 
 function seededShuffle<T>(arr: T[], seed: number): T[] {
-  const result = [...arr];
-  let s = seed;
-  for (let i = result.length - 1; i > 0; i--) {
-    s = (s * 16807 + 0) % 2147483647;
-    const j = s % (i + 1);
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
+	const result = [...arr];
+	let s = seed;
+	for (let i = result.length - 1; i > 0; i--) {
+		s = (s * 16807 + 0) % 2147483647;
+		const j = s % (i + 1);
+		[result[i], result[j]] = [result[j], result[i]];
+	}
+	return result;
 }
 
 function getDomain(url: string): string {
-  try { return new URL(url).hostname; } catch { return ""; }
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return "";
+	}
 }
 
 // Extract YouTube video ID from any YouTube URL
 function getYtVideoId(url: string): string | null {
-  try {
-    const u = new URL(url);
-    if (u.hostname.includes("youtube.com")) {
-      return u.searchParams.get("v") || null;
-    }
-    if (u.hostname.includes("youtu.be")) {
-      return u.pathname.slice(1) || null;
-    }
-  } catch { /* */ }
-  return null;
+	try {
+		const u = new URL(url);
+		if (u.hostname.includes("youtube.com")) {
+			return u.searchParams.get("v") || null;
+		}
+		if (u.hostname.includes("youtu.be")) {
+			return u.pathname.slice(1) || null;
+		}
+	} catch {
+		/* */
+	}
+	return null;
 }
 
 // Helper: push a resource as either a yt-thumb (if YouTube URL) or a text card
 function pushResource(
-  target: CardItem[], url: string, title: string, idx: { v: number },
-  pick: (seed: number, ...opts: number[]) => number,
+	target: CardItem[],
+	url: string,
+	title: string,
+	idx: { v: number },
+	pick: (seed: number, ...opts: number[]) => number,
 ) {
-  const vid = getYtVideoId(url);
-  if (vid) {
-    target.push({
-      type: "yt-thumb",
-      height: pick(idx.v++, 120, 140),
-      data: { thumb: `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`, channel: "" },
-    });
-  } else {
-    target.push({ type: "misc", height: 52, data: { title, domain: getDomain(url) } });
-  }
+	const vid = getYtVideoId(url);
+	if (vid) {
+		target.push({
+			type: "yt-thumb",
+			height: pick(idx.v++, 120, 140),
+			data: {
+				thumb: `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
+				channel: "",
+			},
+		});
+	} else {
+		target.push({
+			type: "misc",
+			height: 52,
+			data: { title, domain: getDomain(url) },
+		});
+	}
 }
 
 // Seeded random for consistent per-item variation
 function seededRand(seed: number): number {
-  const s = (seed * 16807 + 0) % 2147483647;
-  return (s & 0x7fffffff) / 0x7fffffff;
+	const s = (seed * 16807 + 0) % 2147483647;
+	return (s & 0x7fffffff) / 0x7fffffff;
 }
 
 // Pick from size tiers: s/m/l based on seed
 function pick<T>(seed: number, ...opts: T[]): T {
-  return opts[Math.floor(seededRand(seed) * opts.length)];
+	return opts[Math.floor(seededRand(seed) * opts.length)];
 }
 
 // Pre-checked avatar whitelist (generated by scripts/check-avatars.ts)
@@ -112,822 +123,1250 @@ const VALID_YT_HANDLES = new Set(avatarWhitelist.youtube as string[]);
 
 // Featured handles — iconic AI people that should appear near the center
 const FEATURED_HANDLES = [
-  "karpathy", "ylecun", "fchollet", "GaryMarcus", "DrJimFan",
-  "AndrewYNg", "sama", "DarioAmodei", "lexfridman",
+	"karpathy",
+	"ylecun",
+	"fchollet",
+	"GaryMarcus",
+	"DrJimFan",
+	"AndrewYNg",
+	"sama",
+	"DarioAmodei",
+	"lexfridman",
 ];
 
 // MLOps / deployment tools to exclude (keep at most 1)
 const SKIP_TOOLS = new Set([
-  "Weights & Biases", "Replicate", "Together AI", "Modal", "Lambda Cloud",
-  "TensorBoard", "Streamlit", "Gradio", "Netron",
+	"Weights & Biases",
+	"Replicate",
+	"Together AI",
+	"Modal",
+	"Lambda Cloud",
+	"TensorBoard",
+	"Streamlit",
+	"Gradio",
+	"Netron",
 ]);
 
-function buildCardPool(): CardItem[] {
-  const featured: CardItem[] = [];
-  const rest: CardItem[] = [];
-  let idx = 0;
+function buildCardPool(
+	resolvedPlaylistThumbs: Map<string, string> = new Map(),
+): CardItem[] {
+	const featured: CardItem[] = [];
+	const rest: CardItem[] = [];
+	let idx = 0;
 
-  const profileData = (handle: string, initials: string, color: string) =>
-    ({ handle, initials, color });
+	const profileData = (handle: string, initials: string, color: string) => ({
+		handle,
+		initials,
+		color,
+	});
 
-  // --- Profiles: only those with verified avatars ---
-  for (const p of xProfiles) {
-    if (!VALID_X_HANDLES.has(p.handle)) continue;
-    const initials = p.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const colors: Record<string, string> = { researcher: "#6366f1", educator: "#22c55e", builder: "#f59e0b", creator: "#ec4899" };
-    const color = colors[p.category] || "#6366f1";
-    const isFeatured = FEATURED_HANDLES.includes(p.handle);
-    const target = isFeatured ? featured : rest;
-    target.push({
-      type: "profile",
-      height: isFeatured ? pick(idx++, 180, 220) : pick(idx++, 130, 160, 190),
-      data: profileData(p.handle, initials, color),
-    });
-  }
+	// --- Profiles: only those with verified avatars ---
+	for (const p of xProfiles) {
+		if (!VALID_X_HANDLES.has(p.handle)) continue;
+		const initials = p.name
+			.split(" ")
+			.map((w) => w[0])
+			.join("")
+			.slice(0, 2)
+			.toUpperCase();
+		const colors: Record<string, string> = {
+			researcher: "#6366f1",
+			educator: "#22c55e",
+			builder: "#f59e0b",
+			creator: "#ec4899",
+		};
+		const color = colors[p.category] || "#6366f1";
+		const isFeatured = FEATURED_HANDLES.includes(p.handle);
+		const target = isFeatured ? featured : rest;
+		target.push({
+			type: "profile",
+			height: isFeatured
+				? pick(idx++, 180, 220)
+				: pick(idx++, 130, 160, 190),
+			data: profileData(p.handle, initials, color),
+		});
+	}
 
-  // --- FEATURED: iconic book covers ---
-  const ICONIC_BOOKS = ["Deep Learning", "Attention", "Build a Large", "Why Machines Learn", "Reinforcement Learning"];
-  for (const b of books) {
-    if (!b.coverUrl) continue;
-    const isIconic = ICONIC_BOOKS.some(k => b.title.includes(k));
-    const target = isIconic ? featured : rest;
-    target.push({ type: "book", height: isIconic ? pick(idx++, 280, 320) : pick(idx++, 200, 240, 280), data: { cover: b.coverUrl } });
-  }
+	// --- FEATURED: iconic book covers ---
+	const ICONIC_BOOKS = [
+		"Deep Learning",
+		"Attention",
+		"Build a Large",
+		"Why Machines Learn",
+		"Reinforcement Learning",
+	];
+	for (const b of books) {
+		if (!b.coverUrl) continue;
+		const isIconic = ICONIC_BOOKS.some((k) => b.title.includes(k));
+		const target = isIconic ? featured : rest;
+		target.push({
+			type: "book",
+			height: isIconic
+				? pick(idx++, 280, 320)
+				: pick(idx++, 200, 240, 280),
+			data: { cover: b.coverUrl },
+		});
+	}
 
-  // --- FEATURED: best playlist thumbnails ---
-  for (const p of playlists.slice(0, 12)) {
-    const thumb = getPlaylistThumb(p.url);
-    if (thumb) {
-      featured.push({ type: "yt-thumb", height: pick(idx++, 150, 180), data: { thumb, channel: p.channel } });
-    }
-  }
+	// --- FEATURED: best playlist thumbnails ---
+	// Prefer the real noembed-resolved thumbnail; fall back to the
+	// hardcoded YT_THUMBS map for first-paint when the cache is cold.
+	for (const p of playlists.slice(0, 12)) {
+		const thumb =
+			resolvedPlaylistThumbs.get(p.url) || getPlaylistThumb(p.url);
+		if (thumb) {
+			featured.push({
+				type: "yt-thumb",
+				height: pick(idx++, 150, 180),
+				data: { thumb, channel: p.channel },
+			});
+		}
+	}
 
-  // --- Channels: only those with verified avatars ---
-  for (const ch of channels) {
-    if (!VALID_YT_HANDLES.has(ch.handle)) continue;
-    const initials = ch.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const isFeatured = FEATURED_HANDLES.some(f => ch.handle.includes(f));
-    const target = isFeatured ? featured : rest;
-    target.push({
-      type: "channel", height: pick(idx++, 140, 170),
-      data: { handle: ch.handle, initials },
-    });
-  }
+	// --- Channels: only those with verified avatars ---
+	for (const ch of channels) {
+		if (!VALID_YT_HANDLES.has(ch.handle)) continue;
+		const initials = ch.name
+			.split(" ")
+			.map((w) => w[0])
+			.join("")
+			.slice(0, 2)
+			.toUpperCase();
+		const isFeatured = FEATURED_HANDLES.some((f) => ch.handle.includes(f));
+		const target = isFeatured ? featured : rest;
+		target.push({
+			type: "channel",
+			height: pick(idx++, 140, 170),
+			data: { handle: ch.handle, initials },
+		});
+	}
 
-  // Curriculum video thumbnails — most of them
-  const allLessons = modules.flatMap(m => m.lessons).filter(l => l.youtubeId);
-  const pickedLessons = allLessons.filter((_, i) => i % 3 !== 0); // skip every 3rd
-  for (const lesson of pickedLessons) {
-    rest.push({
-      type: "yt-thumb",
-      height: pick(idx++, 110, 130, 160),
-      data: { thumb: `https://i.ytimg.com/vi/${lesson.youtubeId}/hqdefault.jpg`, channel: "" },
-    });
-  }
+	// Curriculum video thumbnails — most of them
+	const allLessons = modules
+		.flatMap((m) => m.lessons)
+		.filter((l) => l.youtubeId);
+	const pickedLessons = allLessons.filter((_, i) => i % 3 !== 0); // skip every 3rd
+	for (const lesson of pickedLessons) {
+		rest.push({
+			type: "yt-thumb",
+			height: pick(idx++, 110, 130, 160),
+			data: {
+				thumb: `https://i.ytimg.com/vi/${lesson.youtubeId}/hqdefault.jpg`,
+				channel: "",
+			},
+		});
+	}
 
-  // ALL papers (58)
-  const ICONIC_PAPERS = ["Attention Is All You Need", "Holographic", "Less is More", "mHC"];
-  for (const p of papers) {
-    const isIconic = ICONIC_PAPERS.some(k => p.title.includes(k));
-    (isIconic ? featured : rest).push({
-      type: "paper", height: pick(idx++, 80, 100), data: { title: p.title, authors: p.authors },
-    });
-  }
+	// ALL papers (58)
+	const ICONIC_PAPERS = [
+		"Attention Is All You Need",
+		"Holographic",
+		"Less is More",
+		"mHC",
+	];
+	for (const p of papers) {
+		const isIconic = ICONIC_PAPERS.some((k) => p.title.includes(k));
+		(isIconic ? featured : rest).push({
+			type: "paper",
+			height: pick(idx++, 80, 100),
+			data: { title: p.title, authors: p.authors },
+		});
+	}
 
-  // ALL blogs (48)
-  for (const b of blogs) {
-    rest.push({ type: "blog", height: 52, data: { name: b.name, domain: getDomain(b.url) } });
-  }
+	// ALL blogs (48)
+	for (const b of blogs) {
+		rest.push({
+			type: "blog",
+			height: 52,
+			data: { name: b.name, domain: getDomain(b.url) },
+		});
+	}
 
-  // Tools — skip MLOps clutter, keep max 2 platforms
-  let platformCount = 0;
-  for (const t of tools) {
-    if (SKIP_TOOLS.has(t.name)) continue;
-    if (t.category === "platform") { platformCount++; if (platformCount > 2) continue; }
-    rest.push({ type: "tool", height: 52, data: { name: t.name, domain: getDomain(t.url) } });
-  }
+	// Tools — skip MLOps clutter, keep max 2 platforms
+	let platformCount = 0;
+	for (const t of tools) {
+		if (SKIP_TOOLS.has(t.name)) continue;
+		if (t.category === "platform") {
+			platformCount++;
+			if (platformCount > 2) continue;
+		}
+		rest.push({
+			type: "tool",
+			height: 52,
+			data: { name: t.name, domain: getDomain(t.url) },
+		});
+	}
 
-  // ALL articles (34)
-  for (const a of articles) {
-    rest.push({ type: "article", height: pick(idx++, 70, 90), data: { title: a.title, domain: getDomain(a.url) } });
-  }
+	// ALL articles (34)
+	for (const a of articles) {
+		rest.push({
+			type: "article",
+			height: pick(idx++, 70, 90),
+			data: { title: a.title, domain: getDomain(a.url) },
+		});
+	}
 
-  // Organizations — all labs, startups, bigtech (skip gov/academic)
-  for (const o of organizations) {
-    if (o.category === "gov" || o.category === "academic") continue;
-    rest.push({ type: "org", height: 52, data: { name: o.name, domain: getDomain(o.url) } });
-  }
+	// Organizations — all labs, startups, bigtech (skip gov/academic)
+	for (const o of organizations) {
+		if (o.category === "gov" || o.category === "academic") continue;
+		rest.push({
+			type: "org",
+			height: 52,
+			data: { name: o.name, domain: getDomain(o.url) },
+		});
+	}
 
-  // ALL misc (63) — YouTube URLs become video thumbnails
-  const idxRef = { v: idx };
-  for (const m of miscResources) {
-    pushResource(rest, m.url, m.title, idxRef, pick);
-  }
+	// ALL misc (63) — YouTube URLs become video thumbnails
+	const idxRef = { v: idx };
+	for (const m of miscResources) {
+		pushResource(rest, m.url, m.title, idxRef, pick);
+	}
 
-  // ALL GPU / CUDA (13)
-  for (const sub of gpuSubtopics) {
-    for (const r of sub.resources) {
-      pushResource(rest, r.url, r.title, idxRef, pick);
-    }
-  }
+	// ALL GPU / CUDA (13)
+	for (const sub of gpuSubtopics) {
+		for (const r of sub.resources) {
+			pushResource(rest, r.url, r.title, idxRef, pick);
+		}
+	}
 
-  // ALL RL resources (9)
-  for (const r of rlResources) {
-    pushResource(rest, r.url, r.title, idxRef, pick);
-  }
+	// ALL RL resources (9)
+	for (const r of rlResources) {
+		pushResource(rest, r.url, r.title, idxRef, pick);
+	}
 
-  // DL resources — all subtopics, 4 per topic
-  for (const sub of dlSubtopics) {
-    for (const r of sub.resources.slice(0, 4)) {
-      pushResource(rest, r.url, r.title, idxRef, pick);
-    }
-  }
+	// DL resources — all subtopics, 4 per topic
+	for (const sub of dlSubtopics) {
+		for (const r of sub.resources.slice(0, 4)) {
+			pushResource(rest, r.url, r.title, idxRef, pick);
+		}
+	}
 
-  // ALL guides (15)
-  for (const g of guides) {
-    pushResource(rest, g.url, g.title, idxRef, pick);
-  }
-  idx = idxRef.v;
+	// ALL guides (15)
+	for (const g of guides) {
+		pushResource(rest, g.url, g.title, idxRef, pick);
+	}
+	idx = idxRef.v;
 
-  // ALL challenges (15)
-  for (const c of challenges) {
-    rest.push({ type: "challenge", height: 52, data: { title: c.title } });
-  }
+	// ALL challenges (15)
+	for (const c of challenges) {
+		rest.push({ type: "challenge", height: 52, data: { title: c.title } });
+	}
 
-  // ALL newsletters (33)
-  for (const n of newsletters) {
-    rest.push({ type: "newsletter", height: 52, data: { name: n.name } });
-  }
+	// ALL newsletters (33)
+	for (const n of newsletters) {
+		rest.push({ type: "newsletter", height: 52, data: { name: n.name } });
+	}
 
-  // Discord / Reddit / Slack communities
-  const COMMUNITIES: { name: string; platform: "discord" | "reddit" | "slack" | "x" }[] = [
-    { name: "Hugging Face", platform: "discord" },
-    { name: "PyTorch", platform: "discord" },
-    { name: "LangChain", platform: "discord" },
-    { name: "Weights & Biases", platform: "discord" },
-    { name: "CUDA MODE", platform: "discord" },
-    { name: "Eleuther AI", platform: "discord" },
-    { name: "Stability AI", platform: "discord" },
-    { name: "Midjourney", platform: "discord" },
-    { name: "OpenAI", platform: "discord" },
-    { name: "r/MachineLearning", platform: "reddit" },
-    { name: "r/deeplearning", platform: "reddit" },
-    { name: "r/learnmachinelearning", platform: "reddit" },
-    { name: "r/artificial", platform: "reddit" },
-    { name: "r/LocalLLaMA", platform: "reddit" },
-    { name: "r/singularity", platform: "reddit" },
-    { name: "r/StableDiffusion", platform: "reddit" },
-    { name: "r/compsci", platform: "reddit" },
-    { name: "MLOps Community", platform: "slack" },
-    { name: "dbt Community", platform: "slack" },
-    { name: "Latent Space", platform: "discord" },
-    { name: "#ML Twitter", platform: "x" },
-    { name: "#AITwitter", platform: "x" },
-  ];
-  for (const c of COMMUNITIES) {
-    rest.push({ type: "community", height: 56, data: { name: c.name, platform: c.platform } });
-  }
+	// Discord / Reddit / Slack communities
+	const COMMUNITIES: {
+		name: string;
+		platform: "discord" | "reddit" | "slack" | "x";
+	}[] = [
+		{ name: "Hugging Face", platform: "discord" },
+		{ name: "PyTorch", platform: "discord" },
+		{ name: "LangChain", platform: "discord" },
+		{ name: "Weights & Biases", platform: "discord" },
+		{ name: "CUDA MODE", platform: "discord" },
+		{ name: "Eleuther AI", platform: "discord" },
+		{ name: "Stability AI", platform: "discord" },
+		{ name: "Midjourney", platform: "discord" },
+		{ name: "OpenAI", platform: "discord" },
+		{ name: "r/MachineLearning", platform: "reddit" },
+		{ name: "r/deeplearning", platform: "reddit" },
+		{ name: "r/learnmachinelearning", platform: "reddit" },
+		{ name: "r/artificial", platform: "reddit" },
+		{ name: "r/LocalLLaMA", platform: "reddit" },
+		{ name: "r/singularity", platform: "reddit" },
+		{ name: "r/StableDiffusion", platform: "reddit" },
+		{ name: "r/compsci", platform: "reddit" },
+		{ name: "MLOps Community", platform: "slack" },
+		{ name: "dbt Community", platform: "slack" },
+		{ name: "Latent Space", platform: "discord" },
+		{ name: "#ML Twitter", platform: "x" },
+		{ name: "#AITwitter", platform: "x" },
+	];
+	for (const c of COMMUNITIES) {
+		rest.push({
+			type: "community",
+			height: 56,
+			data: { name: c.name, platform: c.platform },
+		});
+	}
 
-  // Interview questions — minimal, curious cards
-  for (const q of interviewQuestions) {
-    const colors: Record<string, string> = { easy: "#22c55e", medium: "#eab308", hard: "#ef4444" };
-    rest.push({
-      type: "question", height: pick(idx++, 70, 90),
-      data: { question: q.question, color: colors[q.difficulty] || "#888" },
-    });
-  }
+	// Interview questions — minimal, curious cards
+	for (const q of interviewQuestions) {
+		const colors: Record<string, string> = {
+			easy: "#22c55e",
+			medium: "#eab308",
+			hard: "#ef4444",
+		};
+		rest.push({
+			type: "question",
+			height: pick(idx++, 70, 90),
+			data: {
+				question: q.question,
+				color: colors[q.difficulty] || "#888",
+			},
+		});
+	}
 
-  // Jobs from cache — static sample titles (cache is async, use hardcoded popular roles)
-  const JOB_TITLES = [
-    "ML Engineer", "AI Research Scientist", "Data Scientist", "NLP Engineer",
-    "Computer Vision Engineer", "Deep Learning Engineer", "AI Product Manager",
-    "MLOps Engineer", "Research Intern — AI", "Applied Scientist",
-    "LLM Engineer", "Robotics ML Engineer", "AI Safety Researcher",
-  ];
-  for (const title of JOB_TITLES) {
-    rest.push({ type: "job", height: 52, data: { title } });
-  }
+	// Jobs from cache — static sample titles (cache is async, use hardcoded popular roles)
+	const JOB_TITLES = [
+		"ML Engineer",
+		"AI Research Scientist",
+		"Data Scientist",
+		"NLP Engineer",
+		"Computer Vision Engineer",
+		"Deep Learning Engineer",
+		"AI Product Manager",
+		"MLOps Engineer",
+		"Research Intern — AI",
+		"Applied Scientist",
+		"LLM Engineer",
+		"Robotics ML Engineer",
+		"AI Safety Researcher",
+	];
+	for (const title of JOB_TITLES) {
+		rest.push({ type: "job", height: 52, data: { title } });
+	}
 
-  // Study buddies removed — they're students, not featured profiles
+	// Study buddies removed — they're students, not featured profiles
 
-  // Study tweets removed — can't embed properly in pooled canvas
+	// Study tweets removed — can't embed properly in pooled canvas
 
-  // Platforms (Math Academy, TensorTonic, d2l.ai, etc.)
-  for (const p of platforms) {
-    const domain = getDomain(p.url);
-    rest.push({ type: "platform", height: 52, data: { name: p.title, domain } });
-  }
+	// Platforms (Math Academy, TensorTonic, d2l.ai, etc.)
+	for (const p of platforms) {
+		const domain = getDomain(p.url);
+		rest.push({
+			type: "platform",
+			height: 52,
+			data: { name: p.title, domain },
+		});
+	}
 
-  // Iconic GitHub repos — big OG image cards
-  const REPOS = [
-    "karpathy/nanoGPT", "karpathy/micrograd", "karpathy/llm.c",
-    "rasbt/LLMs-from-scratch", "rasbt/machine-learning-book",
-    "huggingface/transformers", "pytorch/pytorch", "tensorflow/tensorflow",
-    "openai/whisper", "openai/CLIP", "facebookresearch/llama",
-    "meta-llama/llama3", "google-deepmind/alphafold",
-    "CompVis/stable-diffusion", "AUTOMATIC1111/stable-diffusion-webui",
-    "langchain-ai/langchain", "run-llama/llama_index",
-    "ggerganov/llama.cpp", "ollama/ollama",
-    "mlc-ai/mlc-llm", "vllm-project/vllm",
-    "tinygrad/tinygrad",
-    "stas00/ml-engineering", "labmlai/annotated_deep_learning_paper_implementations",
-    "microsoft/DeepSpeed", "nvidia/Megatron-LM",
-    "h3ct0rjs/HighPerformanceComputing",
-    "siboehm/SGEMM_CUDA", "NVIDIA/cuda-samples",
-    "fastai/fastai", "Lightning-AI/pytorch-lightning",
-    "3b1b/manim", "bharathgs/Awesome-pytorch-list",
-    "dair-ai/ML-Papers-of-the-Week", "eugeneyan/open-llms",
-    "anthropics/anthropic-cookbook", "openai/openai-cookbook",
-    // Trending AI tools & deep tech
-    "anthropics/claude-code", "augmentcode/augment",
-    "deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-R1",
-    "OpenManus/OpenManus", "KiloCode/kilocode",
-    "browser-use/browser-use", "all-hands-ai/OpenHands",
-    "jina-ai/reader", "mistralai/mistral-inference",
-    "state-spaces/mamba", "google/gemma.cpp",
-    "apple/ml-ferret", "nvidia/TensorRT-LLM",
-    "unslothai/unsloth", "huggingface/trl",
-    "modal-labs/modal-examples", "lm-sys/FastChat",
-    "openai/shap-e", "lucidrains/vit-pytorch",
-    "openai/tiktoken", "facebookresearch/segment-anything",
-  ];
-  for (const repo of REPOS) {
-    rest.push({ type: "repo", height: pick(idx++, 130, 150), data: { repo } });
-  }
+	// Iconic GitHub repos — big OG image cards
+	const REPOS = [
+		"karpathy/nanoGPT",
+		"karpathy/micrograd",
+		"karpathy/llm.c",
+		"rasbt/LLMs-from-scratch",
+		"rasbt/machine-learning-book",
+		"huggingface/transformers",
+		"pytorch/pytorch",
+		"tensorflow/tensorflow",
+		"openai/whisper",
+		"openai/CLIP",
+		"facebookresearch/llama",
+		"meta-llama/llama3",
+		"google-deepmind/alphafold",
+		"CompVis/stable-diffusion",
+		"AUTOMATIC1111/stable-diffusion-webui",
+		"langchain-ai/langchain",
+		"run-llama/llama_index",
+		"ggerganov/llama.cpp",
+		"ollama/ollama",
+		"mlc-ai/mlc-llm",
+		"vllm-project/vllm",
+		"tinygrad/tinygrad",
+		"stas00/ml-engineering",
+		"labmlai/annotated_deep_learning_paper_implementations",
+		"microsoft/DeepSpeed",
+		"nvidia/Megatron-LM",
+		"h3ct0rjs/HighPerformanceComputing",
+		"siboehm/SGEMM_CUDA",
+		"NVIDIA/cuda-samples",
+		"fastai/fastai",
+		"Lightning-AI/pytorch-lightning",
+		"3b1b/manim",
+		"bharathgs/Awesome-pytorch-list",
+		"dair-ai/ML-Papers-of-the-Week",
+		"eugeneyan/open-llms",
+		"anthropics/anthropic-cookbook",
+		"openai/openai-cookbook",
+		// Trending AI tools & deep tech
+		"anthropics/claude-code",
+		"augmentcode/augment",
+		"deepseek-ai/DeepSeek-V3",
+		"deepseek-ai/DeepSeek-R1",
+		"OpenManus/OpenManus",
+		"KiloCode/kilocode",
+		"browser-use/browser-use",
+		"all-hands-ai/OpenHands",
+		"jina-ai/reader",
+		"mistralai/mistral-inference",
+		"state-spaces/mamba",
+		"google/gemma.cpp",
+		"apple/ml-ferret",
+		"nvidia/TensorRT-LLM",
+		"unslothai/unsloth",
+		"huggingface/trl",
+		"modal-labs/modal-examples",
+		"lm-sys/FastChat",
+		"openai/shap-e",
+		"lucidrains/vit-pytorch",
+		"openai/tiktoken",
+		"facebookresearch/segment-anything",
+	];
+	for (const repo of REPOS) {
+		rest.push({
+			type: "repo",
+			height: pick(idx++, 130, 150),
+			data: { repo },
+		});
+	}
 
-  // Extra iconic AI books (text-only, no cover needed)
-  const EXTRA_BOOKS = [
-    "Artificial Intelligence: A Modern Approach",
-    "Probabilistic Machine Learning",
-    "Neural Networks and Deep Learning",
-    "Speech and Language Processing",
-    "Computer Vision: Algorithms and Applications",
-    "Grokking Deep Learning",
-    "Hands-On Machine Learning with Scikit-Learn & TensorFlow",
-    "Natural Language Processing with Transformers",
-    "Designing Machine Learning Systems",
-    "The Hundred-Page Machine Learning Book",
-    "Practical Deep Learning for Coders",
-    "Forecasting: Principles and Practice",
-    "Bayesian Reasoning and Machine Learning",
-    "Mining of Massive Datasets",
-  ];
-  for (const title of EXTRA_BOOKS) {
-    rest.push({ type: "extrabook", height: 56, data: { title } });
-  }
+	// Extra iconic AI books (text-only, no cover needed)
+	const EXTRA_BOOKS = [
+		"Artificial Intelligence: A Modern Approach",
+		"Probabilistic Machine Learning",
+		"Neural Networks and Deep Learning",
+		"Speech and Language Processing",
+		"Computer Vision: Algorithms and Applications",
+		"Grokking Deep Learning",
+		"Hands-On Machine Learning with Scikit-Learn & TensorFlow",
+		"Natural Language Processing with Transformers",
+		"Designing Machine Learning Systems",
+		"The Hundred-Page Machine Learning Book",
+		"Practical Deep Learning for Coders",
+		"Forecasting: Principles and Practice",
+		"Bayesian Reasoning and Machine Learning",
+		"Mining of Massive Datasets",
+	];
+	for (const title of EXTRA_BOOKS) {
+		rest.push({ type: "extrabook", height: 56, data: { title } });
+	}
 
-  // Featured items first (interleaved for visual variety), then shuffled rest
-  const shuffledFeatured = seededShuffle(featured, 7);
-  const shuffledRest = seededShuffle(rest, 42);
-  return [...shuffledFeatured, ...shuffledRest];
+	// Featured items first (interleaved for visual variety), then shuffled rest
+	const shuffledFeatured = seededShuffle(featured, 7);
+	const shuffledRest = seededShuffle(rest, 42);
+	return [...shuffledFeatured, ...shuffledRest];
 }
 
 // --- Safe DOM card builder ---
 function buildCardDOM(card: CardItem): HTMLDivElement {
-  const root = document.createElement("div");
+	const root = document.createElement("div");
 
-  const el = (tag: string, cls: string, text?: string): HTMLElement => {
-    const e = document.createElement(tag);
-    e.className = cls;
-    if (text) e.textContent = text;
-    return e;
-  };
+	const el = (tag: string, cls: string, text?: string): HTMLElement => {
+		const e = document.createElement(tag);
+		e.className = cls;
+		if (text) e.textContent = text;
+		return e;
+	};
 
-  const img = (src: string, cls?: string): HTMLImageElement => {
-    const i = document.createElement("img");
-    i.src = src;
-    i.alt = "";
-    i.loading = "lazy";
-    i.draggable = false;
-    if (cls) i.className = cls;
-    i.onerror = () => { i.style.display = "none"; };
-    return i;
-  };
+	const img = (src: string, cls?: string): HTMLImageElement => {
+		const i = document.createElement("img");
+		i.src = src;
+		i.alt = "";
+		i.loading = "lazy";
+		i.draggable = false;
+		if (cls) i.className = cls;
+		i.onerror = () => {
+			i.style.display = "none";
+		};
+		return i;
+	};
 
-  const favicon = (domain: string): HTMLImageElement =>
-    img(`https://www.google.com/s2/favicons?domain=${domain}&sz=64`, "lc-favicon");
+	const favicon = (domain: string): HTMLImageElement =>
+		img(
+			`https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
+			"lc-favicon",
+		);
 
-  // SVG icon helper
-  const svgIcon = (pathD: string, size = 16, color = "rgba(0,0,0,0.3)"): SVGSVGElement => {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", String(size));
-    svg.setAttribute("height", String(size));
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", color);
-    svg.setAttribute("stroke-width", "2");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("stroke-linejoin", "round");
-    svg.classList.add("lc-icon");
-    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    p.setAttribute("d", pathD);
-    svg.appendChild(p);
-    return svg;
-  };
+	// SVG icon helper
+	const svgIcon = (
+		pathD: string,
+		size = 16,
+		color = "rgba(0,0,0,0.3)",
+	): SVGSVGElement => {
+		const svg = document.createElementNS(
+			"http://www.w3.org/2000/svg",
+			"svg",
+		);
+		svg.setAttribute("width", String(size));
+		svg.setAttribute("height", String(size));
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", color);
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.classList.add("lc-icon");
+		const p = document.createElementNS(
+			"http://www.w3.org/2000/svg",
+			"path",
+		);
+		p.setAttribute("d", pathD);
+		svg.appendChild(p);
+		return svg;
+	};
 
-  // Common icon paths (Lucide-style)
-  const ICONS = {
-    paper: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
-    mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6",
-    briefcase: "M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16",
-    book: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z",
-    zap: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
-    x: "M4 4l16 16 M20 4L4 20",
-  };
+	// Common icon paths (Lucide-style)
+	const ICONS = {
+		paper: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
+		mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6",
+		briefcase:
+			"M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16",
+		book: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z",
+		zap: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+		x: "M4 4l16 16 M20 4L4 20",
+	};
 
-  switch (card.type) {
-    case "book": {
-      root.className = "lc lc-book";
-      const i = img(card.data.cover);
-      i.onerror = null;
-      root.appendChild(i);
-      break;
-    }
+	switch (card.type) {
+		case "book": {
+			root.className = "lc lc-book";
+			const i = img(card.data.cover);
+			i.onerror = null;
+			root.appendChild(i);
+			break;
+		}
 
-    case "profile": {
-      root.className = "lc lc-profile";
-      root.appendChild(img(`https://unavatar.io/x/${card.data.handle}`, "lc-profile-img"));
-      break;
-    }
+		case "profile": {
+			root.className = "lc lc-profile";
+			root.appendChild(
+				img(
+					`https://unavatar.io/x/${card.data.handle}`,
+					"lc-profile-img",
+				),
+			);
+			break;
+		}
 
-    case "yt-thumb": {
-      root.className = "lc lc-yt-thumb";
-      root.appendChild(img(card.data.thumb, "lc-yt-thumb-img"));
-      const play = el("div", "lc-yt-play-overlay");
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("width", "32");
-      svg.setAttribute("height", "32");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      svg.setAttribute("fill", "white");
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", "M8 5v14l11-7z");
-      svg.appendChild(path);
-      play.appendChild(svg);
-      root.appendChild(play);
-      break;
-    }
+		case "yt-thumb": {
+			root.className = "lc lc-yt-thumb";
+			root.appendChild(img(card.data.thumb, "lc-yt-thumb-img"));
+			const play = el("div", "lc-yt-play-overlay");
+			const svg = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"svg",
+			);
+			svg.setAttribute("width", "32");
+			svg.setAttribute("height", "32");
+			svg.setAttribute("viewBox", "0 0 24 24");
+			svg.setAttribute("fill", "white");
+			const path = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"path",
+			);
+			path.setAttribute("d", "M8 5v14l11-7z");
+			svg.appendChild(path);
+			play.appendChild(svg);
+			root.appendChild(play);
+			break;
+		}
 
-    case "channel": {
-      root.className = "lc lc-channel-img";
-      root.appendChild(img(`https://unavatar.io/youtube/${card.data.handle.replace("@", "")}`, "lc-profile-img"));
-      break;
-    }
+		case "channel": {
+			root.className = "lc lc-channel-img";
+			root.appendChild(
+				img(
+					`https://unavatar.io/youtube/${card.data.handle.replace("@", "")}`,
+					"lc-profile-img",
+				),
+			);
+			break;
+		}
 
-    case "paper": {
-      root.className = "lc lc-paper";
-      root.appendChild(svgIcon(ICONS.paper, 14, "rgba(99,102,241,0.5)"));
-      const ptxt = el("div", "lc-paper-text");
-      ptxt.appendChild(el("span", "lc-title", card.data.title));
-      ptxt.appendChild(el("span", "lc-sub", card.data.authors));
-      root.appendChild(ptxt);
-      break;
-    }
+		case "paper": {
+			root.className = "lc lc-paper";
+			root.appendChild(svgIcon(ICONS.paper, 14, "rgba(99,102,241,0.5)"));
+			const ptxt = el("div", "lc-paper-text");
+			ptxt.appendChild(el("span", "lc-title", card.data.title));
+			ptxt.appendChild(el("span", "lc-sub", card.data.authors));
+			root.appendChild(ptxt);
+			break;
+		}
 
-    case "blog": {
-      root.className = "lc lc-blog";
-      if (card.data.domain) root.appendChild(favicon(card.data.domain));
-      root.appendChild(el("span", "lc-name", card.data.name));
-      break;
-    }
+		case "blog": {
+			root.className = "lc lc-blog";
+			if (card.data.domain) root.appendChild(favicon(card.data.domain));
+			root.appendChild(el("span", "lc-name", card.data.name));
+			break;
+		}
 
-    case "tool": {
-      root.className = "lc lc-tool";
-      if (card.data.domain) root.appendChild(favicon(card.data.domain));
-      root.appendChild(el("span", "lc-name", card.data.name));
-      break;
-    }
+		case "tool": {
+			root.className = "lc lc-tool";
+			if (card.data.domain) root.appendChild(favicon(card.data.domain));
+			root.appendChild(el("span", "lc-name", card.data.name));
+			break;
+		}
 
-    case "article": {
-      root.className = "lc lc-article";
-      if (card.data.domain) root.appendChild(favicon(card.data.domain));
-      root.appendChild(el("span", "lc-title", card.data.title));
-      break;
-    }
+		case "article": {
+			root.className = "lc lc-article";
+			if (card.data.domain) root.appendChild(favicon(card.data.domain));
+			root.appendChild(el("span", "lc-title", card.data.title));
+			break;
+		}
 
-    case "org": {
-      root.className = "lc lc-org";
-      if (card.data.domain) root.appendChild(favicon(card.data.domain));
-      root.appendChild(el("span", "lc-name", card.data.name));
-      break;
-    }
+		case "org": {
+			root.className = "lc lc-org";
+			if (card.data.domain) root.appendChild(favicon(card.data.domain));
+			root.appendChild(el("span", "lc-name", card.data.name));
+			break;
+		}
 
-    case "misc": {
-      root.className = "lc lc-misc";
-      if (card.data.domain) root.appendChild(favicon(card.data.domain));
-      root.appendChild(el("span", "lc-name", card.data.title));
-      break;
-    }
+		case "misc": {
+			root.className = "lc lc-misc";
+			if (card.data.domain) root.appendChild(favicon(card.data.domain));
+			root.appendChild(el("span", "lc-name", card.data.title));
+			break;
+		}
 
-    case "challenge": {
-      root.className = "lc lc-challenge";
-      root.appendChild(svgIcon(ICONS.zap, 14, "rgba(234,179,8,0.5)"));
-      root.appendChild(el("span", "lc-name", card.data.title));
-      break;
-    }
+		case "challenge": {
+			root.className = "lc lc-challenge";
+			root.appendChild(svgIcon(ICONS.zap, 14, "rgba(234,179,8,0.5)"));
+			root.appendChild(el("span", "lc-name", card.data.title));
+			break;
+		}
 
-    case "newsletter": {
-      root.className = "lc lc-newsletter";
-      root.appendChild(svgIcon(ICONS.mail, 14, "rgba(168,85,247,0.45)"));
-      root.appendChild(el("span", "lc-name", card.data.name));
-      break;
-    }
+		case "newsletter": {
+			root.className = "lc lc-newsletter";
+			root.appendChild(svgIcon(ICONS.mail, 14, "rgba(168,85,247,0.45)"));
+			root.appendChild(el("span", "lc-name", card.data.name));
+			break;
+		}
 
-    case "question": {
-      root.className = "lc lc-question";
-      const dot = el("span", "lc-q-dot");
-      dot.style.background = card.data.color;
-      root.appendChild(dot);
-      root.appendChild(el("span", "lc-q-text", card.data.question));
-      break;
-    }
+		case "question": {
+			root.className = "lc lc-question";
+			const dot = el("span", "lc-q-dot");
+			dot.style.background = card.data.color;
+			root.appendChild(dot);
+			root.appendChild(el("span", "lc-q-text", card.data.question));
+			break;
+		}
 
-    case "job": {
-      root.className = "lc lc-job";
-      root.appendChild(svgIcon(ICONS.briefcase, 14, "rgba(6,182,212,0.5)"));
-      root.appendChild(el("span", "lc-name", card.data.title));
-      break;
-    }
+		case "job": {
+			root.className = "lc lc-job";
+			root.appendChild(
+				svgIcon(ICONS.briefcase, 14, "rgba(6,182,212,0.5)"),
+			);
+			root.appendChild(el("span", "lc-name", card.data.title));
+			break;
+		}
 
+		case "platform": {
+			root.className = "lc lc-platform";
+			if (card.data.domain) root.appendChild(favicon(card.data.domain));
+			root.appendChild(el("span", "lc-name", card.data.name));
+			break;
+		}
 
-    case "platform": {
-      root.className = "lc lc-platform";
-      if (card.data.domain) root.appendChild(favicon(card.data.domain));
-      root.appendChild(el("span", "lc-name", card.data.name));
-      break;
-    }
+		case "repo": {
+			root.className = "lc lc-repo";
+			root.appendChild(
+				img(
+					`https://opengraph.githubassets.com/1/${card.data.repo}`,
+					"lc-repo-img",
+				),
+			);
+			break;
+		}
 
-    case "repo": {
-      root.className = "lc lc-repo";
-      root.appendChild(img(`https://opengraph.githubassets.com/1/${card.data.repo}`, "lc-repo-img"));
-      break;
-    }
+		case "extrabook": {
+			root.className = "lc lc-extrabook";
+			root.appendChild(svgIcon(ICONS.book, 14, "rgba(180,140,80,0.5)"));
+			root.appendChild(el("span", "lc-name", card.data.title));
+			break;
+		}
 
-    case "extrabook": {
-      root.className = "lc lc-extrabook";
-      root.appendChild(svgIcon(ICONS.book, 14, "rgba(180,140,80,0.5)"));
-      root.appendChild(el("span", "lc-name", card.data.title));
-      break;
-    }
+		case "community": {
+			root.className = "lc lc-community";
+			// Platform-specific colored SVG icon
+			const platform = card.data.platform;
+			const iconEl = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"svg",
+			);
+			iconEl.setAttribute("width", "20");
+			iconEl.setAttribute("height", "20");
+			iconEl.setAttribute(
+				"viewBox",
+				platform === "reddit" ? "0 0 216 216" : "0 0 256 256",
+			);
+			iconEl.classList.add("lc-community-icon");
 
-    case "community": {
-      root.className = "lc lc-community";
-      // Platform-specific colored SVG icon
-      const platform = card.data.platform;
-      const iconEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      iconEl.setAttribute("width", "20");
-      iconEl.setAttribute("height", "20");
-      iconEl.setAttribute("viewBox", platform === "reddit" ? "0 0 216 216" : "0 0 256 256");
-      iconEl.classList.add("lc-community-icon");
+			if (platform === "discord") {
+				iconEl.setAttribute("viewBox", "0 0 256 199");
+				const p = document.createElementNS(
+					"http://www.w3.org/2000/svg",
+					"path",
+				);
+				p.setAttribute(
+					"d",
+					"M216.856 16.597A208.502 208.502 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046-19.692-2.961-39.203-2.961-58.533 0-1.832-4.4-4.55-9.933-6.846-14.046a207.809 207.809 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161.094 161.094 0 0 0 79.735 175.3a136.413 136.413 0 0 1-21.846-10.632 108.636 108.636 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a131.66 131.66 0 0 0 5.355 4.237 136.07 136.07 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36ZM85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2c12.867 0 23.236 11.804 23.015 26.2.02 14.375-10.148 26.18-23.015 26.18Zm85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18Z",
+				);
+				p.setAttribute("fill", "#5865F2");
+				iconEl.appendChild(p);
+			} else if (platform === "reddit") {
+				iconEl.setAttribute("viewBox", "0 0 216 216");
+				const circle = document.createElementNS(
+					"http://www.w3.org/2000/svg",
+					"circle",
+				);
+				circle.setAttribute("cx", "108");
+				circle.setAttribute("cy", "108");
+				circle.setAttribute("r", "108");
+				circle.setAttribute("fill", "#FF4500");
+				iconEl.appendChild(circle);
+				const face = document.createElementNS(
+					"http://www.w3.org/2000/svg",
+					"path",
+				);
+				face.setAttribute(
+					"d",
+					"M170.1 108c0-9.3-7.5-16.8-16.8-16.8-4.5 0-8.6 1.8-11.6 4.7-11.4-8.2-27.1-13.5-44.6-14.2l7.6-35.7 24.7 5.3c.3 6.6 5.7 11.9 12.4 11.9 6.8 0 12.4-5.6 12.4-12.4s-5.6-12.4-12.4-12.4c-4.8 0-9 2.8-11 6.8l-27.6-5.9c-1.5-.3-2.9.6-3.3 2.1l-8.5 39.8c-17.8.5-33.8 5.9-45.3 14.2-3-2.9-7.1-4.7-11.6-4.7-9.3 0-16.8 7.5-16.8 16.8 0 6.6 3.8 12.3 9.4 15-0.3 1.8-.5 3.7-.5 5.6 0 28.4 33.1 51.5 73.9 51.5s73.9-23.1 73.9-51.5c0-1.9-.2-3.8-.5-5.6 5.5-2.7 9.3-8.4 9.3-15z",
+				);
+				face.setAttribute("fill", "white");
+				iconEl.appendChild(face);
+			} else if (platform === "slack") {
+				iconEl.setAttribute("viewBox", "0 0 2447.6 2452.5");
+				const colors = [
+					{
+						d: "m897.4 0c-135.3.1-244.8 109.9-244.7 245.2-.1 135.3 109.5 245.1 244.8 245.2h244.8v-245.1c.1-135.3-109.5-245.1-244.9-245.3m0 654h-652.6c-135.3.1-244.9 109.9-244.8 245.2-.2 135.3 109.4 245.1 244.7 245.3h652.7c135.3-.1 244.9-109.9 244.8-245.2.1-135.4-109.5-245.2-244.8-245.3z",
+						fill: "#36c5f0",
+					},
+					{
+						d: "m2447.6 899.2c.1-135.3-109.5-245.1-244.8-245.2-135.3.1-244.9 109.9-244.8 245.2v245.3h244.8c135.3-.1 244.9-109.9 244.8-245.3zm-652.7 0v-654c.1-135.2-109.4-245-244.7-245.2-135.3.1-244.9 109.9-244.8 245.2v654c-.2 135.3 109.4 245.1 244.7 245.3 135.3-.1 244.9-109.9 244.8-245.3z",
+						fill: "#2eb67d",
+					},
+					{
+						d: "m1550.1 2452.5c135.3-.1 244.9-109.9 244.8-245.2.1-135.3-109.5-245.1-244.8-245.2h-244.8v245.2c-.1 135.2 109.5 245 244.8 245.2zm0-654.1h652.7c135.3-.1 244.9-109.9 244.8-245.2.2-135.3-109.4-245.1-244.7-245.3h-652.7c-135.3.1-244.9 109.9-244.8 245.2-.1 135.4 109.4 245.2 244.7 245.3z",
+						fill: "#ecb22e",
+					},
+					{
+						d: "m0 1553.2c-.1 135.3 109.5 245.1 244.8 245.2 135.3-.1 244.9-109.9 244.8-245.2v-245.2h-244.8c-135.3.1-244.9 109.9-244.8 245.2zm652.7 0v654c-.2 135.3 109.4 245.1 244.7 245.3 135.3-.1 244.9-109.9 244.8-245.2v-653.9c.2-135.3-109.4-245.1-244.7-245.3-135.4 0-244.9 109.8-244.8 245.1",
+						fill: "#e01e5a",
+					},
+				];
+				for (const c of colors) {
+					const p = document.createElementNS(
+						"http://www.w3.org/2000/svg",
+						"path",
+					);
+					p.setAttribute("d", c.d);
+					p.setAttribute("fill", c.fill);
+					iconEl.appendChild(p);
+				}
+			} else {
+				// X/Twitter
+				iconEl.setAttribute("viewBox", "0 0 1200 1227");
+				const p = document.createElementNS(
+					"http://www.w3.org/2000/svg",
+					"path",
+				);
+				p.setAttribute(
+					"d",
+					"M714.163 519.284 1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.137 519.284h.026ZM569.165 687.828l-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.165 687.854v-.026Z",
+				);
+				p.setAttribute("fill", "#000");
+				iconEl.appendChild(p);
+			}
 
-      if (platform === "discord") {
-        iconEl.setAttribute("viewBox", "0 0 256 199");
-        const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        p.setAttribute("d", "M216.856 16.597A208.502 208.502 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046-19.692-2.961-39.203-2.961-58.533 0-1.832-4.4-4.55-9.933-6.846-14.046a207.809 207.809 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161.094 161.094 0 0 0 79.735 175.3a136.413 136.413 0 0 1-21.846-10.632 108.636 108.636 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a131.66 131.66 0 0 0 5.355 4.237 136.07 136.07 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36ZM85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2c12.867 0 23.236 11.804 23.015 26.2.02 14.375-10.148 26.18-23.015 26.18Zm85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18Z");
-        p.setAttribute("fill", "#5865F2");
-        iconEl.appendChild(p);
-      } else if (platform === "reddit") {
-        iconEl.setAttribute("viewBox", "0 0 216 216");
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", "108");
-        circle.setAttribute("cy", "108");
-        circle.setAttribute("r", "108");
-        circle.setAttribute("fill", "#FF4500");
-        iconEl.appendChild(circle);
-        const face = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        face.setAttribute("d", "M170.1 108c0-9.3-7.5-16.8-16.8-16.8-4.5 0-8.6 1.8-11.6 4.7-11.4-8.2-27.1-13.5-44.6-14.2l7.6-35.7 24.7 5.3c.3 6.6 5.7 11.9 12.4 11.9 6.8 0 12.4-5.6 12.4-12.4s-5.6-12.4-12.4-12.4c-4.8 0-9 2.8-11 6.8l-27.6-5.9c-1.5-.3-2.9.6-3.3 2.1l-8.5 39.8c-17.8.5-33.8 5.9-45.3 14.2-3-2.9-7.1-4.7-11.6-4.7-9.3 0-16.8 7.5-16.8 16.8 0 6.6 3.8 12.3 9.4 15-0.3 1.8-.5 3.7-.5 5.6 0 28.4 33.1 51.5 73.9 51.5s73.9-23.1 73.9-51.5c0-1.9-.2-3.8-.5-5.6 5.5-2.7 9.3-8.4 9.3-15z");
-        face.setAttribute("fill", "white");
-        iconEl.appendChild(face);
-      } else if (platform === "slack") {
-        iconEl.setAttribute("viewBox", "0 0 2447.6 2452.5");
-        const colors = [
-          { d: "m897.4 0c-135.3.1-244.8 109.9-244.7 245.2-.1 135.3 109.5 245.1 244.8 245.2h244.8v-245.1c.1-135.3-109.5-245.1-244.9-245.3m0 654h-652.6c-135.3.1-244.9 109.9-244.8 245.2-.2 135.3 109.4 245.1 244.7 245.3h652.7c135.3-.1 244.9-109.9 244.8-245.2.1-135.4-109.5-245.2-244.8-245.3z", fill: "#36c5f0" },
-          { d: "m2447.6 899.2c.1-135.3-109.5-245.1-244.8-245.2-135.3.1-244.9 109.9-244.8 245.2v245.3h244.8c135.3-.1 244.9-109.9 244.8-245.3zm-652.7 0v-654c.1-135.2-109.4-245-244.7-245.2-135.3.1-244.9 109.9-244.8 245.2v654c-.2 135.3 109.4 245.1 244.7 245.3 135.3-.1 244.9-109.9 244.8-245.3z", fill: "#2eb67d" },
-          { d: "m1550.1 2452.5c135.3-.1 244.9-109.9 244.8-245.2.1-135.3-109.5-245.1-244.8-245.2h-244.8v245.2c-.1 135.2 109.5 245 244.8 245.2zm0-654.1h652.7c135.3-.1 244.9-109.9 244.8-245.2.2-135.3-109.4-245.1-244.7-245.3h-652.7c-135.3.1-244.9 109.9-244.8 245.2-.1 135.4 109.4 245.2 244.7 245.3z", fill: "#ecb22e" },
-          { d: "m0 1553.2c-.1 135.3 109.5 245.1 244.8 245.2 135.3-.1 244.9-109.9 244.8-245.2v-245.2h-244.8c-135.3.1-244.9 109.9-244.8 245.2zm652.7 0v654c-.2 135.3 109.4 245.1 244.7 245.3 135.3-.1 244.9-109.9 244.8-245.2v-653.9c.2-135.3-109.4-245.1-244.7-245.3-135.4 0-244.9 109.8-244.8 245.1", fill: "#e01e5a" },
-        ];
-        for (const c of colors) {
-          const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          p.setAttribute("d", c.d);
-          p.setAttribute("fill", c.fill);
-          iconEl.appendChild(p);
-        }
-      } else {
-        // X/Twitter
-        iconEl.setAttribute("viewBox", "0 0 1200 1227");
-        const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        p.setAttribute("d", "M714.163 519.284 1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.137 519.284h.026ZM569.165 687.828l-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.165 687.854v-.026Z");
-        p.setAttribute("fill", "#000");
-        iconEl.appendChild(p);
-      }
+			root.appendChild(iconEl);
+			root.appendChild(el("span", "lc-name", card.data.name));
+			break;
+		}
+	}
 
-      root.appendChild(iconEl);
-      root.appendChild(el("span", "lc-name", card.data.name));
-      break;
-    }
-  }
-
-  return root;
+	return root;
 }
 
 interface LayoutItem {
-  key: string;
-  card: CardItem;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+	key: string;
+	card: CardItem;
+	x: number;
+	y: number;
+	w: number;
+	h: number;
 }
 
 const CONFIG = {
-  COLS: 6,
-  GAP: 16,
-  EASING: 0.12,
-  POOL_SIZE: 500,
-  BUFFER: 500,
+	COLS: 6,
+	GAP: 16,
+	EASING: 0.12,
+	POOL_SIZE: 500,
+	BUFFER: 500,
 };
 
 const DOMAIN_PILLS = [
-  { to: "/machine-learning", label: "Machine Learning" },
-  { to: "/deep-learning", label: "Deep Learning" },
-  { to: "/reinforcement-learning", label: "Reinforcement Learning" },
-  { to: "/gpu", label: "GPU & CUDA" },
+	{ to: "/machine-learning", label: "Machine Learning" },
+	{ to: "/deep-learning", label: "Deep Learning" },
+	{ to: "/reinforcement-learning", label: "Reinforcement Learning" },
+	{ to: "/gpu", label: "GPU & CUDA" },
 ];
 
+/* ─── Sources badge ──────────────────────────────────────────────
+   Where the archive's content comes from. Stacked-avatar pattern,
+   brand-colored circles with Phosphor logos. Sits above the resource
+   pills on the landing canvas. */
+
+type SourceTile = {
+	name: string;
+	bg: string;
+	/** Either a Phosphor icon name + weight, OR a custom render override. */
+	icon?: string;
+	weight?: "regular" | "fill" | "bold";
+	/** When set, replaces the default Phosphor icon with this JSX (used for
+	 *  brands without a Phosphor logo, e.g. Notion). Should render in white. */
+	custom?: React.ReactNode;
+};
+
+const NotionGlyph = (
+	<svg
+		width="11"
+		height="11"
+		viewBox="0 0 256 268"
+		preserveAspectRatio="xMidYMid"
+	>
+		<path
+			fill="#FFF"
+			d="M212.377 89.53c1.034 4.681 0 9.362-4.681 9.897l-7.783 1.542v114.404c-6.758 3.637-12.981 5.715-18.18 5.715-8.308 0-10.386-2.604-16.609-10.396l-50.898-80.079v77.476l16.1 3.646s0 9.362-12.989 9.362l-35.814 2.077c-1.043-2.086 0-7.284 3.63-8.318l9.351-2.595V109.823l-12.98-1.052c-1.044-4.68 1.55-11.439 8.826-11.965l38.426-2.585 52.958 81.113v-71.76l-13.498-1.552c-1.043-5.733 3.111-9.896 8.3-10.404l35.84-2.087Z"
+		/>
+	</svg>
+);
+
+/** Brand colors are intentionally *not* token-driven — these are
+ *  third-party identity colors (YouTube red, GitHub black, X black,
+ *  Reddit orange, Discord blurple, Notion black). The "Web" fallback
+ *  uses --ga-fg2. */
+const SOURCES: SourceTile[] = [
+	{ name: "YouTube", bg: "#FF0000", icon: "youtube-logo", weight: "fill" },
+	{ name: "GitHub", bg: "#181717", icon: "github-logo", weight: "fill" },
+	{ name: "X", bg: "#000000", icon: "x-logo", weight: "regular" },
+	{ name: "Reddit", bg: "#FF4500", icon: "reddit-logo", weight: "fill" },
+	{ name: "Discord", bg: "#5865F2", icon: "discord-logo", weight: "fill" },
+	{ name: "Notion", bg: "#000000", custom: NotionGlyph },
+	{ name: "Web", bg: "var(--ga-fg2)", icon: "globe", weight: "regular" },
+];
+
+function SourcesBadge() {
+	return (
+		<div
+			className="inline-flex items-center"
+			style={{
+				gap: 8,
+				height: 32,
+				padding: "0 12px 0 6px",
+				borderRadius: 7,
+				background: "#FFFFFF",
+				border: "0.5px solid #CFCFCF",
+				color: "var(--ga-fg1)",
+				boxShadow:
+					"0 2px 2px rgba(59,59,59,0.09), 0 0 1px rgba(59,59,59,0.10), inset 0 -3px 0 #D3D3D3",
+				pointerEvents: "auto",
+			}}
+		>
+			<div className="flex items-center">
+				{SOURCES.map((s, i) => (
+					<span
+						key={s.name}
+						title={s.name}
+						className="inline-flex items-center justify-center"
+						style={{
+							width: 20,
+							height: 20,
+							borderRadius: "50%",
+							background: s.bg,
+							color: "#FFF",
+							border: "1.5px solid #FFFFFF",
+							marginLeft: i === 0 ? 0 : -7,
+							zIndex: SOURCES.length - i,
+							boxShadow: "0 1px 2px rgba(0,0,0,0.12)",
+							overflow: "hidden",
+						}}
+					>
+						{s.custom ?? (
+							<i
+								className={`${s.weight === "fill" ? "ph-fill" : s.weight === "bold" ? "ph-bold" : "ph"} ph-${s.icon}`}
+								style={{
+									fontSize: 11,
+									color: "#FFF",
+									lineHeight: 1,
+								}}
+								aria-hidden
+							/>
+						)}
+					</span>
+				))}
+			</div>
+			<span
+				style={{
+					fontFamily: "var(--ga-font-mono)",
+					fontSize: 12,
+					fontWeight: 500,
+					letterSpacing: "0.04em",
+					color: "var(--ga-fg1)",
+					whiteSpace: "nowrap",
+				}}
+			>
+				Resources
+			</span>
+		</div>
+	);
+}
+
 const RESOURCE_PILLS = [
-  { to: "/resources", label: "Books" },
-  { to: "/overview", label: "Curriculum" },
-  { to: "/blogs", label: "Blogs" },
-  { to: "/papers", label: "Papers" },
-  { to: "/articles", label: "Notes" },
-  { to: "/jobs", label: "Jobs" },
-  { to: "/tools", label: "Tools" },
-  { to: "/glossary", label: "Glossary" },
+	{ to: "/resources", label: "Books" },
+	{ to: "/overview", label: "Curriculum" },
+	{ to: "/blogs", label: "Blogs" },
+	{ to: "/papers", label: "Papers" },
+	{ to: "/articles", label: "Notes" },
+	{ to: "/jobs", label: "Jobs" },
+	{ to: "/tools", label: "Tools" },
+	{ to: "/glossary", label: "Glossary" },
 ];
 
 export default function LandingPage() {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const stars = useGitHubStars();
+	const viewportRef = useRef<HTMLDivElement>(null);
+	const gridRef = useRef<HTMLDivElement>(null);
+	const stars = useGitHubStars();
 
-  useEffect(() => {
-    const viewport = viewportRef.current!;
-    const grid = gridRef.current!;
-    const cards = buildCardPool();
+	useEffect(() => {
+		const viewport = viewportRef.current!;
+		const grid = gridRef.current!;
+		const cards = buildCardPool();
 
-    let layoutItems: LayoutItem[] = [];
-    let totalWidth = 0;
-    let maxColHeight = 0;
+		let layoutItems: LayoutItem[] = [];
+		let totalWidth = 0;
+		let maxColHeight = 0;
 
-    const buildLayout = () => {
-      const vw = window.innerWidth;
-      const gap = CONFIG.GAP;
-      // Visual columns that fit the viewport
-      const visCols = vw < 640 ? 3 : vw < 1024 ? 4 : CONFIG.COLS;
-      const colWidth = Math.floor((vw + gap) / visCols);
-      // Use 4x more columns so the tile spans ~4 viewports before repeating
-      const cols = visCols * 4;
-      totalWidth = colWidth * cols;
+		const buildLayout = () => {
+			const vw = window.innerWidth;
+			const gap = CONFIG.GAP;
+			// Visual columns that fit the viewport
+			const visCols = vw < 640 ? 3 : vw < 1024 ? 4 : CONFIG.COLS;
+			const colWidth = Math.floor((vw + gap) / visCols);
+			// Use 4x more columns so the tile spans ~4 viewports before repeating
+			const cols = visCols * 4;
+			totalWidth = colWidth * cols;
 
-      const colHeights = new Array(cols).fill(0);
-      const columns: { card: CardItem; x: number; y: number; w: number; h: number }[][] =
-        Array.from({ length: cols }, () => []);
+			const colHeights = new Array(cols).fill(0);
+			const columns: {
+				card: CardItem;
+				x: number;
+				y: number;
+				w: number;
+				h: number;
+			}[][] = Array.from({ length: cols }, () => []);
 
-      for (const card of cards) {
-        let minCol = 0;
-        for (let c = 1; c < cols; c++) {
-          if (colHeights[c] < colHeights[minCol]) minCol = c;
-        }
-        const w = colWidth - gap;
-        const h = card.height;
-        const x = minCol * colWidth + gap / 2;
-        const y = colHeights[minCol] + gap / 2;
-        columns[minCol].push({ card, x, y, w, h });
-        colHeights[minCol] += h + gap;
-      }
+			for (const card of cards) {
+				let minCol = 0;
+				for (let c = 1; c < cols; c++) {
+					if (colHeights[c] < colHeights[minCol]) minCol = c;
+				}
+				const w = colWidth - gap;
+				const h = card.height;
+				const x = minCol * colWidth + gap / 2;
+				const y = colHeights[minCol] + gap / 2;
+				columns[minCol].push({ card, x, y, w, h });
+				colHeights[minCol] += h + gap;
+			}
 
-      maxColHeight = Math.max(...colHeights);
-      layoutItems = [];
-      for (let col = 0; col < cols; col++) {
-        for (let row = 0; row < columns[col].length; row++) {
-          layoutItems.push({ key: `${col}-${row}`, ...columns[col][row] });
-        }
-      }
-    };
+			maxColHeight = Math.max(...colHeights);
+			layoutItems = [];
+			for (let col = 0; col < cols; col++) {
+				for (let row = 0; row < columns[col].length; row++) {
+					layoutItems.push({
+						key: `${col}-${row}`,
+						...columns[col][row],
+					});
+				}
+			}
+		};
 
-    buildLayout();
+		buildLayout();
 
-    const freePool: HTMLDivElement[] = [];
-    const activeMap = new Map<string, { el: HTMLDivElement; item: LayoutItem }>();
+		const freePool: HTMLDivElement[] = [];
+		const activeMap = new Map<
+			string,
+			{ el: HTMLDivElement; item: LayoutItem }
+		>();
 
-    for (let i = 0; i < CONFIG.POOL_SIZE; i++) {
-      const poolEl = document.createElement("div");
-      poolEl.className = "lc-pool";
-      poolEl.style.display = "none";
-      poolEl.style.position = "absolute";
-      poolEl.style.top = "0";
-      poolEl.style.left = "0";
-      poolEl.style.willChange = "transform";
-      grid.appendChild(poolEl);
-      freePool.push(poolEl);
-    }
+		for (let i = 0; i < CONFIG.POOL_SIZE; i++) {
+			const poolEl = document.createElement("div");
+			poolEl.className = "lc-pool";
+			poolEl.style.display = "none";
+			poolEl.style.position = "absolute";
+			poolEl.style.top = "0";
+			poolEl.style.left = "0";
+			poolEl.style.willChange = "transform";
+			grid.appendChild(poolEl);
+			freePool.push(poolEl);
+		}
 
-    const acquire = () => (freePool.length > 0 ? freePool.pop()! : null);
-    const release = (poolEl: HTMLDivElement) => {
-      poolEl.style.display = "none";
-      freePool.push(poolEl);
-    };
+		const acquire = () => (freePool.length > 0 ? freePool.pop()! : null);
+		const release = (poolEl: HTMLDivElement) => {
+			poolEl.style.display = "none";
+			freePool.push(poolEl);
+		};
 
-    const cam = { x: 0, y: 0 };
-    const target = { x: 0, y: 0 };
-    let isDragging = false;
-    let hasDragged = false;
-    let dragStart = { x: 0, y: 0 };
-    let prevMouse = { x: 0, y: 0 };
-    let touchStart: { x: number; y: number } | null = null;
+		const cam = { x: 0, y: 0 };
+		const target = { x: 0, y: 0 };
+		let isDragging = false;
+		let hasDragged = false;
+		let dragStart = { x: 0, y: 0 };
+		let prevMouse = { x: 0, y: 0 };
+		let touchStart: { x: number; y: number } | null = null;
 
-    const render = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const buf = CONFIG.BUFFER;
+		const render = () => {
+			const vw = window.innerWidth;
+			const vh = window.innerHeight;
+			const buf = CONFIG.BUFFER;
 
-      const minCX = Math.min(cam.x, target.x);
-      const maxCX = Math.max(cam.x, target.x);
-      const minCY = Math.min(cam.y, target.y);
-      const maxCY = Math.max(cam.y, target.y);
+			const minCX = Math.min(cam.x, target.x);
+			const maxCX = Math.max(cam.x, target.x);
+			const minCY = Math.min(cam.y, target.y);
+			const maxCY = Math.max(cam.y, target.y);
 
-      const startTX = Math.floor((minCX - buf) / totalWidth);
-      const endTX = Math.floor((maxCX + vw + buf) / totalWidth);
-      const startTY = Math.floor((minCY - buf) / maxColHeight);
-      const endTY = Math.floor((maxCY + vh + buf) / maxColHeight);
+			const startTX = Math.floor((minCX - buf) / totalWidth);
+			const endTX = Math.floor((maxCX + vw + buf) / totalWidth);
+			const startTY = Math.floor((minCY - buf) / maxColHeight);
+			const endTY = Math.floor((maxCY + vh + buf) / maxColHeight);
 
-      const visible = new Set<string>();
+			const visible = new Set<string>();
 
-      for (const item of layoutItems) {
-        for (let ty = startTY; ty <= endTY; ty++) {
-          for (let tx = startTX; tx <= endTX; tx++) {
-            const wx = item.x + tx * totalWidth;
-            const wy = item.y + ty * maxColHeight;
-            const sx = wx - cam.x;
-            const sy = wy - cam.y;
+			for (const item of layoutItems) {
+				for (let ty = startTY; ty <= endTY; ty++) {
+					for (let tx = startTX; tx <= endTX; tx++) {
+						const wx = item.x + tx * totalWidth;
+						const wy = item.y + ty * maxColHeight;
+						const sx = wx - cam.x;
+						const sy = wy - cam.y;
 
-            if (sx + item.w < -buf || sx > vw + buf || sy + item.h < -buf || sy > vh + buf) continue;
+						if (
+							sx + item.w < -buf ||
+							sx > vw + buf ||
+							sy + item.h < -buf ||
+							sy > vh + buf
+						)
+							continue;
 
-            const vk = `${item.key}_${tx}_${ty}`;
-            visible.add(vk);
+						const vk = `${item.key}_${tx}_${ty}`;
+						visible.add(vk);
 
-            const existing = activeMap.get(vk);
-            if (existing) {
-              existing.el.style.transform = `translate3d(${sx}px,${sy}px,0)`;
-            } else {
-              const poolEl = acquire();
-              if (!poolEl) continue;
+						const existing = activeMap.get(vk);
+						if (existing) {
+							existing.el.style.transform = `translate3d(${sx}px,${sy}px,0)`;
+						} else {
+							const poolEl = acquire();
+							if (!poolEl) continue;
 
-              while (poolEl.firstChild) poolEl.removeChild(poolEl.firstChild);
-              poolEl.appendChild(buildCardDOM(item.card));
-              poolEl.style.width = `${item.w}px`;
-              poolEl.style.height = `${item.h}px`;
-              poolEl.style.transform = `translate3d(${sx}px,${sy}px,0)`;
-              poolEl.style.display = "";
+							while (poolEl.firstChild)
+								poolEl.removeChild(poolEl.firstChild);
+							poolEl.appendChild(buildCardDOM(item.card));
+							poolEl.style.width = `${item.w}px`;
+							poolEl.style.height = `${item.h}px`;
+							poolEl.style.transform = `translate3d(${sx}px,${sy}px,0)`;
+							poolEl.style.display = "";
 
-              activeMap.set(vk, { el: poolEl, item });
-            }
-          }
-        }
-      }
+							activeMap.set(vk, { el: poolEl, item });
+						}
+					}
+				}
+			}
 
-      for (const [vk, entry] of activeMap) {
-        if (!visible.has(vk)) {
-          release(entry.el);
-          activeMap.delete(vk);
-        }
-      }
-    };
+			for (const [vk, entry] of activeMap) {
+				if (!visible.has(vk)) {
+					release(entry.el);
+					activeMap.delete(vk);
+				}
+			}
+		};
 
-    let rafId: number;
-    const animate = () => {
-      rafId = requestAnimationFrame(animate);
-      const dx = target.x - cam.x;
-      const dy = target.y - cam.y;
-      if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
-        cam.x += dx * CONFIG.EASING;
-        cam.y += dy * CONFIG.EASING;
-        render();
-      }
-    };
+		let rafId: number;
+		const animate = () => {
+			rafId = requestAnimationFrame(animate);
+			const dx = target.x - cam.x;
+			const dy = target.y - cam.y;
+			if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+				cam.x += dx * CONFIG.EASING;
+				cam.y += dy * CONFIG.EASING;
+				render();
+			}
+		};
 
-    const DRAG_THRESHOLD = 5;
-    const onMouseDown = (e: MouseEvent) => {
-      isDragging = true; hasDragged = false;
-      dragStart = { x: e.clientX, y: e.clientY };
-      prevMouse = { x: e.clientX, y: e.clientY };
-      viewport.classList.add("grabbing");
-    };
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      const tdx = e.clientX - dragStart.x;
-      const tdy = e.clientY - dragStart.y;
-      if (Math.sqrt(tdx * tdx + tdy * tdy) > DRAG_THRESHOLD) hasDragged = true;
-      target.x -= e.clientX - prevMouse.x;
-      target.y -= e.clientY - prevMouse.y;
-      prevMouse = { x: e.clientX, y: e.clientY };
-    };
-    const onMouseUp = () => { isDragging = false; viewport.classList.remove("grabbing"); };
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 1 && touchStart) {
-        e.preventDefault();
-        target.x -= e.touches[0].clientX - touchStart.x;
-        target.y -= e.touches[0].clientY - touchStart.y;
-        touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
-    };
-    const onTouchEnd = () => { touchStart = null; };
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      target.x += e.deltaX;
-      target.y += e.deltaY;
-    };
-    const onResize = () => {
-      buildLayout();
-      for (const [vk, entry] of activeMap) { release(entry.el); activeMap.delete(vk); }
-      render();
-    };
+		const DRAG_THRESHOLD = 5;
+		const onMouseDown = (e: MouseEvent) => {
+			isDragging = true;
+			hasDragged = false;
+			dragStart = { x: e.clientX, y: e.clientY };
+			prevMouse = { x: e.clientX, y: e.clientY };
+			viewport.classList.add("grabbing");
+		};
+		const onMouseMove = (e: MouseEvent) => {
+			if (!isDragging) return;
+			const tdx = e.clientX - dragStart.x;
+			const tdy = e.clientY - dragStart.y;
+			if (Math.sqrt(tdx * tdx + tdy * tdy) > DRAG_THRESHOLD)
+				hasDragged = true;
+			target.x -= e.clientX - prevMouse.x;
+			target.y -= e.clientY - prevMouse.y;
+			prevMouse = { x: e.clientX, y: e.clientY };
+		};
+		const onMouseUp = () => {
+			isDragging = false;
+			viewport.classList.remove("grabbing");
+		};
+		const onTouchStart = (e: TouchEvent) => {
+			if (e.touches.length === 1)
+				touchStart = {
+					x: e.touches[0].clientX,
+					y: e.touches[0].clientY,
+				};
+		};
+		const onTouchMove = (e: TouchEvent) => {
+			if (e.touches.length === 1 && touchStart) {
+				e.preventDefault();
+				target.x -= e.touches[0].clientX - touchStart.x;
+				target.y -= e.touches[0].clientY - touchStart.y;
+				touchStart = {
+					x: e.touches[0].clientX,
+					y: e.touches[0].clientY,
+				};
+			}
+		};
+		const onTouchEnd = () => {
+			touchStart = null;
+		};
+		const onWheel = (e: WheelEvent) => {
+			e.preventDefault();
+			target.x += e.deltaX;
+			target.y += e.deltaY;
+		};
+		const onResize = () => {
+			buildLayout();
+			for (const [vk, entry] of activeMap) {
+				release(entry.el);
+				activeMap.delete(vk);
+			}
+			render();
+		};
 
-    viewport.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    viewport.addEventListener("touchstart", onTouchStart, { passive: true });
-    viewport.addEventListener("touchmove", onTouchMove, { passive: false });
-    viewport.addEventListener("touchend", onTouchEnd);
-    viewport.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("resize", onResize);
+		viewport.addEventListener("mousedown", onMouseDown);
+		window.addEventListener("mousemove", onMouseMove);
+		window.addEventListener("mouseup", onMouseUp);
+		viewport.addEventListener("touchstart", onTouchStart, {
+			passive: true,
+		});
+		viewport.addEventListener("touchmove", onTouchMove, { passive: false });
+		viewport.addEventListener("touchend", onTouchEnd);
+		viewport.addEventListener("wheel", onWheel, { passive: false });
+		window.addEventListener("resize", onResize);
 
-    render();
-    rafId = requestAnimationFrame(animate);
+		render();
+		rafId = requestAnimationFrame(animate);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      viewport.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      viewport.removeEventListener("touchstart", onTouchStart);
-      viewport.removeEventListener("touchmove", onTouchMove);
-      viewport.removeEventListener("touchend", onTouchEnd);
-      viewport.removeEventListener("wheel", onWheel);
-      window.removeEventListener("resize", onResize);
-      while (grid.firstChild) grid.removeChild(grid.firstChild);
-    };
-  }, []);
+		return () => {
+			cancelAnimationFrame(rafId);
+			viewport.removeEventListener("mousedown", onMouseDown);
+			window.removeEventListener("mousemove", onMouseMove);
+			window.removeEventListener("mouseup", onMouseUp);
+			viewport.removeEventListener("touchstart", onTouchStart);
+			viewport.removeEventListener("touchmove", onTouchMove);
+			viewport.removeEventListener("touchend", onTouchEnd);
+			viewport.removeEventListener("wheel", onWheel);
+			window.removeEventListener("resize", onResize);
+			while (grid.firstChild) grid.removeChild(grid.firstChild);
+		};
+	}, []);
 
-  return (
-    <div ref={viewportRef} className="landing-viewport">
-      <div ref={gridRef} className="landing-grid-canvas" />
+	return (
+		<div ref={viewportRef} className="landing-viewport">
+			<div ref={gridRef} className="landing-grid-canvas" />
 
-      <div className="lp-overlay">
-        <div className="lp-overlay-fade lp-overlay-fade-bottom" aria-hidden="true" />
+			<div className="lp-overlay">
+				<div
+					className="lp-overlay-fade lp-overlay-fade-bottom"
+					aria-hidden="true"
+				/>
 
-        <div className="lp-overlay-bottom">
-          <div className="lp-overlay-hero">
-            <h1 className="lp-overlay-title font-mono">Become an AI Researcher</h1>
-          </div>
+				<div className="lp-overlay-bottom">
+					{/*<div className="lp-overlay-hero">
+            <img
+              src="/logo.png"
+              alt=""
+              width={160}
+              height={160}
+              style={{
+                width: 160,
+                height: 160,
+                objectFit: "contain",
+                display: "block",
+                marginBottom: 8,
+                filter: "drop-shadow(0 6px 16px rgba(178, 32, 109, 0.18))",
+              }}
+            />
+            <h1 className="lp-overlay-title">Become an AI Researcher</h1>
+          </div>*/}
 
-          <div className="lp-overlay-pills lp-overlay-pills-domain">
+					<LandingLauncher />
+
+					{/*<div className="lp-overlay-pills lp-overlay-pills-domain">
             {DOMAIN_PILLS.map((p) => (
               <Link key={p.to} to={p.to} className="lp-pill lp-pill-domain">
                 {p.label}
               </Link>
             ))}
-          </div>
+          </div>*/}
 
-          <div className="lp-overlay-pills lp-overlay-pills-resource">
+					{/*<div className="lp-overlay-pills lp-overlay-pills-resource">
             {RESOURCE_PILLS.map((p) => (
               <Link key={p.to} to={p.to} className="lp-pill lp-pill-resource">
                 {p.label}
               </Link>
             ))}
-          </div>
+          </div>*/}
 
-          <div className="lp-overlay-bottom-actions">
-            <Link to="/overview" className="lp-cta">
-              Get Started
-              <span aria-hidden="true" className="lp-cta-arrow">→</span>
-            </Link>
-            <a
-              href="https://github.com/suraj-xd/ai-research-archive"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lp-star-badge"
-            >
-              <Star size={12} strokeWidth={2} />
-              <span>
-                {stars !== null ? `${stars.toLocaleString()} on GitHub` : "Star on GitHub"}
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+					<div className="flex flex-wrap max-w-[760px] mx-auto gap-3 justify-center sm:justify-between items-center w-full">
+						<Link to="/overview" className="lp-cta">
+							Get Started
+							<span aria-hidden="true" className="lp-cta-arrow">
+								→
+							</span>
+						</Link>
+						<div className="flex flex-wrap justify-center items-center gap-2">
+							<SourcesBadge />
+
+							<a
+								href="https://github.com/suraj-xd/ai-research-archive"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="ga-btn ga-btn-secondary"
+								style={{
+									height: 32,
+									padding: "0 10px",
+									borderRadius: 7,
+									pointerEvents: "auto",
+									flexShrink: 0,
+								}}
+								aria-label={
+									stars !== null
+										? `Star on GitHub — ${stars} stars`
+										: "Star on GitHub"
+								}
+							>
+								<PhIcon name="github-logo" size={14} color="var(--ga-fg1)" />
+								<PhIcon
+									name="star"
+									weight="fill"
+									size={12}
+									color="var(--ga-fg2)"
+								/>
+								<span
+									style={{
+										fontFamily: "var(--ga-font-mono)",
+										fontSize: 12,
+										fontWeight: 500,
+										letterSpacing: "0.02em",
+										color: "var(--ga-fg1)",
+										fontVariantNumeric: "tabular-nums",
+									}}
+								>
+									{stars !== null ? stars.toLocaleString() : "Star"}
+								</span>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }
