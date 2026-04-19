@@ -5,11 +5,12 @@ import { useGitHubStars } from "@/hooks/useGitHubStars";
 interface HeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
+  onOpenPalette?: () => void;
 }
 
 const REPO = "suraj-xd/ai-research-archive";
 
-export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
+export function Header({ onToggleSidebar, sidebarOpen, onOpenPalette }: HeaderProps) {
   const stars = useGitHubStars(REPO);
 
   return (
@@ -79,6 +80,59 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
         className="md:ml-3 ml-auto flex items-center"
         style={{ gap: 8 }}
       >
+        {onOpenPalette && (
+          <button
+            type="button"
+            onClick={onOpenPalette}
+            className="inline-flex items-center"
+            style={{
+              gap: 8,
+              height: 32,
+              padding: "0 10px 0 10px",
+              borderRadius: 7,
+              background: "var(--ga-chip)",
+              color: "var(--ga-fg2)",
+              border: 0,
+              cursor: "pointer",
+              transition: "background 120ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--ga-hover)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--ga-chip)";
+            }}
+            aria-label="Search the archive (⌘K)"
+          >
+            <PhIcon name="magnifying-glass" size={13} color="var(--ga-fg2)" />
+            <span
+              className="hidden sm:inline"
+              style={{
+                fontFamily: "var(--ga-font-sans)",
+                fontSize: 12,
+                color: "var(--ga-fg2)",
+              }}
+            >
+              Search
+            </span>
+            <kbd
+              className="hidden md:inline-flex items-center"
+              style={{
+                padding: "2px 5px",
+                borderRadius: 4,
+                background: "var(--ga-surface)",
+                border: "1px solid var(--ga-border)",
+                color: "var(--ga-fg2)",
+                fontFamily: "var(--ga-font-mono)",
+                fontSize: 9,
+                letterSpacing: "0.04em",
+                lineHeight: 1,
+              }}
+            >
+              ⌘K
+            </kbd>
+          </button>
+        )}
         <a
           href={`https://github.com/${REPO}`}
           target="_blank"

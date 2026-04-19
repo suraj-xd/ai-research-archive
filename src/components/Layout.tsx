@@ -3,11 +3,25 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { PhIcon } from "@/components/brand";
+import { CommandPalette } from "@/components/CommandPalette";
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +60,12 @@ export function Layout() {
       <Header
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         sidebarOpen={sidebarOpen}
+        onOpenPalette={() => setPaletteOpen(true)}
+      />
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
       />
 
       <div className="flex">

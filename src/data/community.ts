@@ -412,10 +412,15 @@ export const categoryColors: Record<string, string> = {
 export interface CommunityServer {
   name: string;
   url: string;
-  platform: "discord" | "reddit";
+  platform: "discord" | "reddit" | "twitter";
 }
 
 export const communityServers: CommunityServer[] = [
+  // Twitter / X Communities
+  { name: "AI Research × Software", url: "https://x.com/i/communities/1935642350765924358", platform: "twitter" },
+  { name: "LocalLLaMA", url: "https://x.com/i/communities/1958212555958022177", platform: "twitter" },
+  { name: "Machine Learning", url: "https://x.com/i/communities/1509381007950204928", platform: "twitter" },
+
   // Discord
   { name: "GroundZero AI", url: "https://discord.gg/tdztf4kXvz", platform: "discord" },
   { name: "Eureka Labs", url: "https://discord.gg/axGCnnQ5Mm", platform: "discord" },

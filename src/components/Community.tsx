@@ -288,13 +288,13 @@ export function Community() {
         </div>
       </div>
 
-      {/* Discord & Reddit Communities */}
+      {/* Twitter, Discord & Reddit Communities */}
       <div className="mt-8">
         <div className="grid-card p-5 relative mb-4">
           <div className="flex items-center gap-2 mb-1">
             <PhIcon name="chat-circle" size={14} color="var(--ga-fg2)" />
             <h2 className="text-sm font-semibold text-foreground">
-              Discord & Reddit communities
+              Twitter, Discord & Reddit communities
             </h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -308,6 +308,7 @@ export function Community() {
           {(
             [
               { id: "all", label: "All" },
+              { id: "twitter", label: "X" },
               { id: "discord", label: "Discord" },
               { id: "reddit", label: "Reddit" },
             ] as { id: PlatformFilter; label: string }[]
@@ -321,6 +322,7 @@ export function Community() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
+              {f.id === "twitter" && <PhIcon name="x-logo" size={12} color="currentColor" />}
               {f.id === "discord" && <DiscordIcon size={12} />}
               {f.id === "reddit" && <RedditIcon size={12} />}
               {f.label}
@@ -349,8 +351,10 @@ export function Community() {
               <div className="w-9 h-9 flex items-center justify-center shrink-0 rounded bg-secondary text-muted-foreground">
                 {server.platform === "discord" ? (
                   <DiscordIcon size={18} />
-                ) : (
+                ) : server.platform === "reddit" ? (
                   <RedditIcon size={18} />
+                ) : (
+                  <PhIcon name="x-logo" size={16} color="currentColor" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -367,7 +371,11 @@ export function Community() {
                 </div>
               </div>
               <span className={`${NEUTRAL_CHIP} shrink-0 mt-0.5`}>
-                {server.platform === "discord" ? "DISCORD" : "REDDIT"}
+                {server.platform === "discord"
+                  ? "DISCORD"
+                  : server.platform === "reddit"
+                    ? "REDDIT"
+                    : "X COMMUNITY"}
               </span>
             </a>
           ))}
