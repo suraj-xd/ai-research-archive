@@ -921,6 +921,8 @@ button.grid-card:hover,
   gap: 6px;
   height: 32px;
   padding: 0 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
   border-radius: 7px;
   background: #FFFFFF;
   border: 0.5px solid #CFCFCF;
@@ -952,8 +954,10 @@ button.grid-card:hover,
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
   gap: 10px;
-  height: 44px;
+  height: 34px;
   padding: 0 22px;
   border-radius: 8px;
   background: linear-gradient(180deg, #272727 0%, #414141 89.66%);

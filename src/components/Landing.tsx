@@ -92,7 +92,7 @@ export function HeroSection() {
 				</div>
 				<Link
 					to="/overview"
-					className="flex items-center"
+					className="hidden md:flex items-center"
 					style={{
 						color: "var(--ga-fg1)",
 						textDecoration: "none",

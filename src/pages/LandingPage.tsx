@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
 import { useGitHubStars } from "@/hooks/useGitHubStars";
+import { PhIcon } from "@/components/brand";
 import { LandingLauncher } from "@/components/landing/LandingLauncher";
 import { books, playlists, channels, platforms } from "@/data/resources";
 import { modules } from "@/data/curriculum";
@@ -942,35 +942,34 @@ function SourcesBadge() {
 		<div
 			className="inline-flex items-center"
 			style={{
-				gap: 10,
-				padding: "5px 14px 5px 8px",
-				borderRadius: "var(--ga-r-full, 999px)",
-				background: "rgba(255, 255, 255, 0.55)",
-				backdropFilter: "blur(14px) saturate(180%)",
-				WebkitBackdropFilter: "blur(14px) saturate(180%)",
-				border: "1px solid rgba(0, 0, 0, 0.07)",
-				boxShadow: "var(--ga-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
-				marginTop: 6,
+				gap: 8,
+				height: 32,
+				padding: "0 12px 0 6px",
+				borderRadius: 7,
+				background: "#FFFFFF",
+				border: "0.5px solid #CFCFCF",
+				color: "var(--ga-fg1)",
+				boxShadow:
+					"0 2px 2px rgba(59,59,59,0.09), 0 0 1px rgba(59,59,59,0.10), inset 0 -3px 0 #D3D3D3",
 				pointerEvents: "auto",
 			}}
 		>
-			<div className="flex items-center" style={{ marginLeft: 4 }}>
+			<div className="flex items-center">
 				{SOURCES.map((s, i) => (
 					<span
 						key={s.name}
 						title={s.name}
 						className="inline-flex items-center justify-center"
 						style={{
-							width: 22,
-							height: 22,
+							width: 20,
+							height: 20,
 							borderRadius: "50%",
 							background: s.bg,
 							color: "#FFF",
-							border: "1.5px solid var(--ga-bg, #FBFBFB)",
-							marginLeft: i === 0 ? 0 : -8,
+							border: "1.5px solid #FFFFFF",
+							marginLeft: i === 0 ? 0 : -7,
 							zIndex: SOURCES.length - i,
-							boxShadow:
-								"var(--ga-shadow-sm, 0 1px 2px rgba(0,0,0,0.12))",
+							boxShadow: "0 1px 2px rgba(0,0,0,0.12)",
 							overflow: "hidden",
 						}}
 					>
@@ -978,7 +977,7 @@ function SourcesBadge() {
 							<i
 								className={`${s.weight === "fill" ? "ph-fill" : s.weight === "bold" ? "ph-bold" : "ph"} ph-${s.icon}`}
 								style={{
-									fontSize: 12,
+									fontSize: 11,
 									color: "#FFF",
 									lineHeight: 1,
 								}}
@@ -991,11 +990,11 @@ function SourcesBadge() {
 			<span
 				style={{
 					fontFamily: "var(--ga-font-mono)",
-					fontSize: 10,
+					fontSize: 12,
 					fontWeight: 500,
-					letterSpacing: "0.12em",
-					textTransform: "uppercase",
-					color: "var(--ga-fg2)",
+					letterSpacing: "0.04em",
+					color: "var(--ga-fg1)",
+					whiteSpace: "nowrap",
 				}}
 			>
 				Resources
@@ -1316,40 +1315,53 @@ export default function LandingPage() {
             ))}
           </div>*/}
 
-					<div className="flex max-w-[760px] mx-auto gap-4 justify-between items-center w-full">
+					<div className="flex flex-wrap max-w-[760px] mx-auto gap-3 justify-center sm:justify-between items-center w-full">
 						<Link to="/overview" className="lp-cta">
 							Get Started
 							<span aria-hidden="true" className="lp-cta-arrow">
 								→
 							</span>
 						</Link>
-						<div className="flex justify-end items-center gap-2">
+						<div className="flex flex-wrap justify-center items-center gap-2">
 							<SourcesBadge />
 
 							<a
 								href="https://github.com/suraj-xd/ai-research-archive"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="lp-star-badge"
+								className="ga-btn ga-btn-secondary"
+								style={{
+									height: 32,
+									padding: "0 10px",
+									borderRadius: 7,
+									pointerEvents: "auto",
+									flexShrink: 0,
+								}}
 								aria-label={
 									stars !== null
-										? `Star this on GitHub — ${stars} stars`
-										: "Star this on GitHub"
+										? `Star on GitHub — ${stars} stars`
+										: "Star on GitHub"
 								}
 							>
-								<Star size={12} strokeWidth={2} />
-								<span>Star this</span>
-								{stars !== null && (
-									<span
-										style={{
-											color: "var(--ga-fg2)",
-											marginLeft: 2,
-											fontVariantNumeric: "tabular-nums",
-										}}
-									>
-										· {stars.toLocaleString()}
-									</span>
-								)}
+								<PhIcon name="github-logo" size={14} color="var(--ga-fg1)" />
+								<PhIcon
+									name="star"
+									weight="fill"
+									size={12}
+									color="var(--ga-fg2)"
+								/>
+								<span
+									style={{
+										fontFamily: "var(--ga-font-mono)",
+										fontSize: 12,
+										fontWeight: 500,
+										letterSpacing: "0.02em",
+										color: "var(--ga-fg1)",
+										fontVariantNumeric: "tabular-nums",
+									}}
+								>
+									{stars !== null ? stars.toLocaleString() : "Star"}
+								</span>
 							</a>
 						</div>
 					</div>
