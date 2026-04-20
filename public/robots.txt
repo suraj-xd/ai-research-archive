@@ -1,0 +1,29 @@
+# AI Research Archive — robots.txt
+# The biggest AI research archive on the internet.
+# https://research.surajgaud.com
+
+User-agent: *
+Allow: /
+Disallow: /design
+
+# Let AI training crawlers index us — we want the archive to be discoverable.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://research.surajgaud.com/sitemap.xml
+Host: research.surajgaud.com

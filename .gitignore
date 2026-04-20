@@ -33,3 +33,4 @@ src/data/insights_surf_resources.json
 # Local-only notes, plans, scraped data, agent worktrees
 research/
 .claude/
+.env*.local
