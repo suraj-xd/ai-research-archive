@@ -2,10 +2,195 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary meta -->
+    <title>AI Research Archive — the biggest AI research archive on the internet</title>
+    <meta
+      name="description"
+      content="The biggest AI research archive on the internet. Curated curriculum, papers, tools, blogs, jobs, and community for becoming an AI researcher — free, calm, ad-free."
+    />
+    <meta
+      name="keywords"
+      content="AI research archive, AI researcher hub, become an AI researcher, AI curriculum, machine learning curriculum, deep learning, transformers, large language models, LLM, LLMs, generative AI, diffusion models, neural networks, reinforcement learning, RLHF, computer vision, NLP, natural language processing, mechanistic interpretability, AI safety, AI alignment, prompt engineering, RAG, retrieval augmented generation, vector database, AI agents, agentic AI, MLOps, AI papers, ML papers, arxiv, AI research papers, research roadmap, AI roadmap, machine learning roadmap, deep learning roadmap, GPU programming, CUDA, Triton, PyTorch, TensorFlow, JAX, AI books, ML books, AI blogs, ML blogs, AI newsletters, AI podcasts, AI courses, AI bootcamp, AI study group, study with me AI, AI jobs, ML engineer jobs, AI engineer jobs, AI community, AI Discord, AI tools, AI interviews, AI glossary, AI fundamentals, OpenAI, Anthropic, DeepMind, Google AI, Meta AI, xAI, Mistral, Andrej Karpathy, Yann LeCun, Ilya Sutskever, research archive"
+    />
+    <meta name="author" content="Suraj Gaud" />
+    <meta name="creator" content="Suraj Gaud" />
+    <meta name="publisher" content="Suraj Gaud" />
+    <meta name="application-name" content="AI Research Archive" />
+    <meta name="generator" content="Vite + React" />
+    <meta name="category" content="Education, Artificial Intelligence, Machine Learning, Research" />
+    <meta name="classification" content="AI Education, Research Resources" />
+    <meta name="rating" content="General" />
+    <meta name="distribution" content="global" />
+    <meta name="revisit-after" content="3 days" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <meta name="format-detection" content="telephone=no, address=no, email=no" />
+    <meta name="theme-color" content="#FBFBFB" />
+    <meta name="color-scheme" content="light" />
+
+    <!-- Canonical & language alternates -->
+    <link rel="canonical" href="https://research.surajgaud.com/" />
+    <link rel="alternate" hreflang="en" href="https://research.surajgaud.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://research.surajgaud.com/" />
+
+    <!-- Robots -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+
+    <!-- Icons & PWA -->
     <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="shortcut icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Research Archive</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+    <link rel="mask-icon" href="/logo.png" color="#FBFBFB" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="AI Research Archive" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="msapplication-TileColor" content="#FBFBFB" />
+    <meta name="msapplication-TileImage" content="/logo.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AI Research Archive" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://research.surajgaud.com/" />
+    <meta
+      property="og:title"
+      content="AI Research Archive — the biggest AI research archive on the internet"
+    />
+    <meta
+      property="og:description"
+      content="The biggest AI research archive on the internet. Curated curriculum, papers, tools, blogs, jobs, and community for becoming an AI researcher — free, calm, ad-free."
+    />
+    <meta property="og:image" content="https://research.surajgaud.com/og-image.png" />
+    <meta property="og:image:secure_url" content="https://research.surajgaud.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="AI Research Archive — the biggest AI research archive on the internet, curated for aspiring AI researchers."
+    />
+    <meta property="article:author" content="https://x.com/notsurajgaud" />
+    <meta property="article:publisher" content="https://x.com/notsurajgaud" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@notsurajgaud" />
+    <meta name="twitter:creator" content="@notsurajgaud" />
+    <meta name="twitter:domain" content="research.surajgaud.com" />
+    <meta name="twitter:url" content="https://research.surajgaud.com/" />
+    <meta
+      name="twitter:title"
+      content="AI Research Archive — the biggest AI research archive on the internet"
+    />
+    <meta
+      name="twitter:description"
+      content="The biggest AI research archive on the internet. Curated curriculum, papers, tools, blogs, jobs, and community for aspiring AI researchers."
+    />
+    <meta name="twitter:image" content="https://research.surajgaud.com/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="AI Research Archive — the biggest AI research archive on the internet."
+    />
+
+    <!-- rel=me for identity verification (Mastodon, IndieWeb) -->
+    <link rel="me" href="https://x.com/notsurajgaud" />
+    <link rel="me" href="https://github.com/suraj-xd" />
+    <link rel="author" href="https://x.com/notsurajgaud" />
+
+    <!-- Sitemap -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+    <!-- Search engine verification (placeholders — fill in when you claim the site) -->
+    <!-- <meta name="google-site-verification" content="" /> -->
+    <!-- <meta name="yandex-verification" content="" /> -->
+    <!-- <meta name="msvalidate.01" content="" /> -->
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://research.surajgaud.com/#website",
+            "url": "https://research.surajgaud.com/",
+            "name": "AI Research Archive",
+            "alternateName": [
+              "research archive",
+              "AI Researcher Hub",
+              "Become an AI Researcher"
+            ],
+            "description": "The biggest AI research archive on the internet. Curated curriculum, papers, tools, blogs, jobs, and community for becoming an AI researcher.",
+            "inLanguage": "en-US",
+            "publisher": { "@id": "https://research.surajgaud.com/#person" },
+            "keywords": "AI research archive, AI researcher hub, become an AI researcher, machine learning curriculum, deep learning, transformers, LLMs, generative AI, diffusion models, reinforcement learning, RLHF, NLP, computer vision, MLOps, AI papers, AI roadmap, GPU programming, CUDA, PyTorch, AI tools, AI jobs, AI community",
+            "about": [
+              { "@type": "Thing", "name": "Artificial Intelligence" },
+              { "@type": "Thing", "name": "Machine Learning" },
+              { "@type": "Thing", "name": "Deep Learning" },
+              { "@type": "Thing", "name": "Large Language Models" },
+              { "@type": "Thing", "name": "Transformers" },
+              { "@type": "Thing", "name": "Reinforcement Learning" },
+              { "@type": "Thing", "name": "Natural Language Processing" },
+              { "@type": "Thing", "name": "Computer Vision" },
+              { "@type": "Thing", "name": "Generative AI" },
+              { "@type": "Thing", "name": "MLOps" },
+              { "@type": "Thing", "name": "GPU Programming" },
+              { "@type": "Thing", "name": "AI Safety" }
+            ],
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://research.surajgaud.com/?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "CollectionPage",
+            "@id": "https://research.surajgaud.com/#collection",
+            "url": "https://research.surajgaud.com/",
+            "name": "AI Research Archive",
+            "description": "The biggest AI research archive on the internet — a curated home for curriculum, papers, tools, blogs, jobs, and community.",
+            "isPartOf": { "@id": "https://research.surajgaud.com/#website" },
+            "primaryImageOfPage": "https://research.surajgaud.com/og-image.png",
+            "about": [
+              { "@type": "Thing", "name": "AI Research" },
+              { "@type": "Thing", "name": "Machine Learning Education" },
+              { "@type": "Thing", "name": "Deep Learning Curriculum" }
+            ],
+            "audience": {
+              "@type": "Audience",
+              "audienceType": "Aspiring AI researchers, ML engineers, AI engineers, students"
+            },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "Person",
+            "@id": "https://research.surajgaud.com/#person",
+            "name": "Suraj Gaud",
+            "alternateName": "notsurajgaud",
+            "url": "https://surajgaud.com",
+            "sameAs": [
+              "https://x.com/notsurajgaud",
+              "https://github.com/suraj-xd"
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <!-- Preload OG image so social crawlers + first paint both benefit -->
+    <link rel="preload" as="image" href="/og-image.png" fetchpriority="low" />
+
+    <!-- Fonts & icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />

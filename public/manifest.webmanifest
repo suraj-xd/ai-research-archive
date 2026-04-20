@@ -1,0 +1,28 @@
+{
+  "name": "AI Research Archive",
+  "short_name": "Research Archive",
+  "description": "The biggest AI research archive on the internet. Curated curriculum, papers, tools, blogs, jobs, and community for becoming an AI researcher.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBFBFB",
+  "theme_color": "#FBFBFB",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["education", "reference", "productivity"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
