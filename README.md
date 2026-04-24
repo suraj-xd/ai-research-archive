@@ -2,6 +2,8 @@
 
 A curated learning hub for people who want to become AI researchers — books, papers, playlists, courses, blogs, glossaries, interview questions, challenges, jobs, and roadmaps, all in one place.
 
+![AI Research Archive homepage](./public/homepage.png)
+
 Live: **[your-deployment-url]**
 
 ## What's inside
