@@ -39,7 +39,7 @@ export function Roadmap() {
             const isLeft = i % 2 === 0;
 
             return (
-              <div key={module.id} className="relative">
+              <div key={module.id} id={module.id} className="relative scroll-mt-20">
                 {/* Vertical connector */}
                 <div className="flex justify-center">
                   <div

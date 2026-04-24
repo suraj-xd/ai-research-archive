@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo, PhIcon, ZigDivider } from "@/components/brand";
 import playlistThumbs from "@/data/playlistThumbs.json";
+import { modules, type Module } from "@/data/curriculum";
 
 /* ─── Curated picks per domain ─────────────────────────────────
  * Niche & awesome resources — every URL resolves to a real visual
@@ -159,18 +160,21 @@ type Domain = {
   label: string;
   icon: string;
   to: string;
-  picks: Pick[];
+  /** When omitted, the domain renders a bespoke view (e.g. curriculum grid)
+   *  instead of the horizontal picks slider. */
+  picks?: Pick[];
 };
 
 const DOMAINS: Domain[] = [
-  { id: "dl",        label: "Deep learning",          icon: "brain",        to: "/deep-learning",          picks: DL_PICKS },
-  { id: "ml",        label: "Machine learning",       icon: "function",     to: "/machine-learning",       picks: ML_PICKS },
-  { id: "rl",        label: "Reinforcement learning", icon: "robot",        to: "/reinforcement-learning", picks: RL_PICKS },
-  { id: "gpu",       label: "GPU & CUDA",             icon: "cpu",          to: "/gpu",                    picks: GPU_PICKS },
-  { id: "tools",     label: "Tools",                  icon: "wrench",       to: "/tools",                  picks: TOOLS_PICKS },
-  { id: "books",     label: "Books",                  icon: "stack",        to: "/resources",              picks: BOOKS_PICKS },
-  { id: "community", label: "Community",              icon: "chat-circle",  to: "/community",              picks: COMMUNITY_PICKS },
-  { id: "people",    label: "People to follow",       icon: "users-three",  to: "/community",              picks: PEOPLE_PICKS },
+  { id: "curriculum", label: "Curriculum",             icon: "graduation-cap", to: "/overview" },
+  { id: "dl",         label: "Deep learning",          icon: "brain",          to: "/deep-learning",          picks: DL_PICKS },
+  { id: "ml",         label: "Machine learning",       icon: "function",       to: "/machine-learning",       picks: ML_PICKS },
+  { id: "rl",         label: "Reinforcement learning", icon: "robot",          to: "/reinforcement-learning", picks: RL_PICKS },
+  { id: "gpu",        label: "GPU & CUDA",             icon: "cpu",            to: "/gpu",                    picks: GPU_PICKS },
+  { id: "tools",      label: "Tools",                  icon: "wrench",         to: "/tools",                  picks: TOOLS_PICKS },
+  { id: "books",      label: "Books",                  icon: "stack",          to: "/resources",              picks: BOOKS_PICKS },
+  { id: "community",  label: "Community",              icon: "chat-circle",    to: "/community",              picks: COMMUNITY_PICKS },
+  { id: "people",     label: "People to follow",       icon: "users-three",    to: "/community",              picks: PEOPLE_PICKS },
 ];
 
 const TYPEWRITER_QUERIES = [
@@ -597,6 +601,116 @@ function FindMoreCard({ to, label }: { to: string; label: string }) {
   );
 }
 
+/* ─── Curriculum grid ─────────────────────────────────────────── */
+
+function CurriculumChip({
+  module,
+  index,
+  className = "flex",
+}: {
+  module: Module;
+  index: number;
+  className?: string;
+}) {
+  return (
+    <Link
+      to={`/overview#${module.id}`}
+      className={`group relative items-center justify-between gap-2 p-1.5 rounded-sm transition-all backdrop-blur-sm  hover:bg-white hover:shadow-[0_1px_2px_rgba(20,20,20,0.06)] ${className}`}
+      style={{ minHeight: 20 }}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span
+            className="shrink-0"
+            style={{
+              fontFamily: "var(--ga-font-mono)",
+              fontSize: 10,
+              color: "var(--ga-fg3)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span
+            className="truncate"
+            style={{
+              fontFamily: "var(--ga-font-sans)",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "var(--ga-fg1)",
+              lineHeight: 1.2,
+            }}
+          >
+            {module.title}
+          </span>
+        </div>
+        {/*<div
+          style={{
+            fontFamily: "var(--ga-font-mono)",
+            fontSize: 9,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--ga-fg3)",
+            paddingLeft: 24,
+            marginTop: 2,
+          }}
+        >
+          {count} {count === 1 ? "lesson" : "lessons"}
+        </div>*/}
+      </div>
+      <PhIcon
+        name="arrow-right"
+        size={14}
+        color="var(--ga-fg2)"
+        className="shrink-0 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+      />
+    </Link>
+  );
+}
+
+function CurriculumGrid() {
+  // Below sm, show first N chips + a single "X+ more" tile;
+  // at sm+, show all 12 chips in a 3-col grid.
+  const MOBILE_VISIBLE = 5;
+  const hiddenOnMobile = modules.length - MOBILE_VISIBLE;
+
+  return (
+    <div className="grid grid-cols-2 gap-2 px-1.5 py-1 sm:grid-cols-3">
+      {modules.slice(0, MOBILE_VISIBLE).map((m, i) => (
+        <CurriculumChip key={m.id} module={m} index={i} />
+      ))}
+      {hiddenOnMobile > 0 && (
+        <Link
+          to="/overview"
+          className="group relative flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 transition-all hover:bg-white hover:shadow-[0_1px_2px_rgba(20,20,20,0.06)] sm:hidden"
+          style={{ background: "var(--ga-chip)", minHeight: 54 }}
+          aria-label={`See ${hiddenOnMobile} more modules`}
+        >
+          <span
+            style={{
+              fontFamily: "var(--ga-font-sans)",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "var(--ga-fg1)",
+            }}
+          >
+            {hiddenOnMobile}+ more
+          </span>
+          <PhIcon name="arrow-right" size={14} color="var(--ga-fg2)" />
+        </Link>
+      )}
+      {modules.slice(MOBILE_VISIBLE).map((m, i) => (
+        <CurriculumChip
+          key={m.id}
+          module={m}
+          index={i + MOBILE_VISIBLE}
+          className="hidden sm:flex"
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ─── Typewriter ──────────────────────────────────────────────── */
 
 function useTypewriter(queries: string[]): string {
@@ -744,7 +858,7 @@ export function LandingLauncher() {
       </div>
 
       {/* Domain dock */}
-      <div className="flex items-center justify-start gap-1 p-1">
+      <div className="flex items-center justify-start gap-1 p-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {DOMAINS.map((d) => {
           const isActive = d.id === activeId;
           return (
@@ -817,50 +931,54 @@ export function LandingLauncher() {
         </span>
       </div>
 
-      {/* Horizontal slider — overflow-x:auto handles trackpad/wheel/touch;
-          mouse drag is wired up via onMouseDown for desktop users. */}
-      <div
-        ref={sliderRef}
-        onMouseDown={(e) => {
-          const slider = sliderRef.current;
-          if (!slider || e.button !== 0) return;
-          // Don't hijack drags that start on a link/button — let click work.
-          const target = e.target as HTMLElement;
-          if (target.closest("a, button")) return;
-          e.preventDefault();
-          const startX = e.pageX;
-          const startLeft = slider.scrollLeft;
-          slider.style.cursor = "grabbing";
-          let moved = false;
-          const onMove = (ev: MouseEvent) => {
-            const dx = ev.pageX - startX;
-            if (Math.abs(dx) > 4) moved = true;
-            slider.scrollLeft = startLeft - dx;
-          };
-          const onUp = () => {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-            slider.style.cursor = "";
-            if (moved) {
-              const blockClick = (ev: MouseEvent) => {
-                ev.stopPropagation();
-                ev.preventDefault();
-                window.removeEventListener("click", blockClick, true);
-              };
-              window.addEventListener("click", blockClick, true);
-            }
-          };
-          window.addEventListener("mousemove", onMove);
-          window.addEventListener("mouseup", onUp);
-        }}
-        className="flex gap-3 overflow-x-auto overflow-y-hidden px-1.5 py-1 cursor-grab select-none [scrollbar-color:rgba(0,0,0,0.18)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:bg-black/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
-        style={{ scrollBehavior: "smooth" }}
-      >
-        {active.picks.map((p, i) => (
-          <ResourceCard key={`${active.id}-${i}-${p.url}`} pick={p} />
-        ))}
-        <FindMoreCard to={active.to} label={active.label} />
-      </div>
+      {active.id === "curriculum" ? (
+        <CurriculumGrid />
+      ) : (
+        /* Horizontal slider — overflow-x:auto handles trackpad/wheel/touch;
+           mouse drag is wired up via onMouseDown for desktop users. */
+        <div
+          ref={sliderRef}
+          onMouseDown={(e) => {
+            const slider = sliderRef.current;
+            if (!slider || e.button !== 0) return;
+            // Don't hijack drags that start on a link/button — let click work.
+            const target = e.target as HTMLElement;
+            if (target.closest("a, button")) return;
+            e.preventDefault();
+            const startX = e.pageX;
+            const startLeft = slider.scrollLeft;
+            slider.style.cursor = "grabbing";
+            let moved = false;
+            const onMove = (ev: MouseEvent) => {
+              const dx = ev.pageX - startX;
+              if (Math.abs(dx) > 4) moved = true;
+              slider.scrollLeft = startLeft - dx;
+            };
+            const onUp = () => {
+              window.removeEventListener("mousemove", onMove);
+              window.removeEventListener("mouseup", onUp);
+              slider.style.cursor = "";
+              if (moved) {
+                const blockClick = (ev: MouseEvent) => {
+                  ev.stopPropagation();
+                  ev.preventDefault();
+                  window.removeEventListener("click", blockClick, true);
+                };
+                window.addEventListener("click", blockClick, true);
+              }
+            };
+            window.addEventListener("mousemove", onMove);
+            window.addEventListener("mouseup", onUp);
+          }}
+          className="flex gap-3 overflow-x-auto overflow-y-hidden px-1.5 py-1 cursor-grab select-none [scrollbar-color:rgba(0,0,0,0.18)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:bg-black/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
+          style={{ scrollBehavior: "smooth" }}
+        >
+          {active.picks?.map((p, i) => (
+            <ResourceCard key={`${active.id}-${i}-${p.url}`} pick={p} />
+          ))}
+          <FindMoreCard to={active.to} label={active.label} />
+        </div>
+      )}
 
       
 

@@ -1272,7 +1272,7 @@ export default function LandingPage() {
 		<div ref={viewportRef} className="landing-viewport">
 			<div ref={gridRef} className="landing-grid-canvas" />
 
-			<div className="lp-overlay">
+			<div className="fixed inset-0 z-20 pointer-events-none flex flex-col justify-end overflow-hidden font-mono pt-8 px-4 pb-6 md:pt-12 md:px-6 md:pb-16">
 				<div
 					className="lp-overlay-fade lp-overlay-fade-bottom"
 					aria-hidden="true"

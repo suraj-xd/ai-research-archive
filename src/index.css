@@ -813,13 +813,6 @@ button.grid-card:hover,
 
 /* Landing Page — Overlay (hero, pills, CTA) */
 
-.lp-overlay {
-  position: fixed; inset: 0; z-index: 20; pointer-events: none;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  padding: 48px 24px 64px;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  overflow: hidden;
-}
 .lp-overlay-fade { position: absolute; left: 0; right: 0; pointer-events: none; z-index: 0; }
 .lp-overlay-fade-top {
   top: 0; height: 48%;
@@ -994,7 +987,6 @@ button.grid-card:hover,
 .lp-cta-arrow { display: inline-block; transition: transform 0.15s ease; }
 
 @media (max-width: 640px) {
-  .lp-overlay { padding: 32px 16px 48px; }
   .lp-overlay-pills-resource .lp-pill-resource { font-size: 9.5px; padding: 5px 10px; }
   .lp-pill-domain { font-size: 11px; padding: 8px 13px; }
   .lp-cta { padding: 12px 22px; font-size: 12px; }
